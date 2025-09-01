@@ -1,0 +1,39 @@
+import type React from "react"
+import type { Metadata } from "next"
+import { Montserrat } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
+import "./globals.css"
+import { AuthProvider } from "@/lib/hooks/use-auth"
+import { CartProvider } from "@/lib/hooks/use-cart"
+import { Suspense } from "react"
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  display: "swap",
+})
+
+export const metadata: Metadata = {
+  title: "Hardware Store - Professional Tools & Supplies",
+  description: "Your trusted partner for construction and hardware supplies",
+  generator: "v0.app",
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en">
+      <body className={`font-sans ${montserrat.variable}`}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AuthProvider>
+            <CartProvider>{children}</CartProvider>
+          </AuthProvider>
+        </Suspense>
+        <Analytics />
+      </body>
+    </html>
+  )
+}
