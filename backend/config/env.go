@@ -8,7 +8,7 @@ import (
 )
 
 func LoadEnv() {
-	err := godotenv.Load("config.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
@@ -23,7 +23,7 @@ func LoadEnv() {
 	}
 
 	if os.Getenv("JWT_SECRET") == "" {
-		os.Setenv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
+		os.Setenv("JWT_SECRET", "hardware-store-jwt-secret-key-2024")
 	}
 
 	if os.Getenv("JWT_EXPIRY") == "" {

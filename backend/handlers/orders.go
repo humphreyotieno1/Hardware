@@ -3,6 +3,8 @@ package handlers
 import (
 	"backend/config"
 	"backend/models"
+	"backend/services"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -133,6 +135,21 @@ func CreateOrder(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to commit order",
 		})
+	}
+
+	// Send order confirmation notification
+	notificationService := services.NewNotificationService()
+
+	// Get user details for notification
+	var user models.User
+	if err := config.DB.First(&user, userUUID).Error; err == nil {
+		// Send notification asynchronously (don't block the response)
+		go func() {
+			if err := notificationService.SendOrderConfirmation(&order, &user); err != nil {
+				// Log error but don't fail the order creation
+				fmt.Printf("Failed to send order confirmation notification: %v\n", err)
+			}
+		}()
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

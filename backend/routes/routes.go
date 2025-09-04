@@ -9,19 +9,23 @@ import (
 
 // SetupRoutes configures all the application routes
 func SetupRoutes(app *fiber.App) {
-	// Health check
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"message": "Hardware Store API is running",
-		})
-	})
+	// Health check endpoints
+	app.Get("/health", handlers.HealthCheck)
+	app.Get("/health/db", handlers.DatabaseHealthCheck)
+	app.Get("/health/redis", handlers.RedisHealthCheck)
+	app.Get("/health/services", handlers.ExternalServicesHealthCheck)
+	app.Get("/health/full", handlers.FullHealthCheck)
 
 	// API routes
 	api := app.Group("/api")
+
+	// Apply rate limiting to all API routes
+	api.Use(middleware.RateLimitMiddleware())
+
 	{
-		// Auth routes (public)
+		// Auth routes (public) - with stricter rate limiting
 		auth := api.Group("/auth")
+		auth.Use(middleware.StrictRateLimitMiddleware())
 		{
 			auth.Post("/register", handlers.Register)
 			auth.Post("/login", handlers.Login)
@@ -96,6 +100,23 @@ func SetupRoutes(app *fiber.App) {
 				payments.Post("/initiate", handlers.InitiatePayment)
 				payments.Post("/webhook", handlers.PaymentWebhook)
 				payments.Get("/:id/status", handlers.GetPaymentStatus)
+			}
+
+			// File upload routes
+			upload := protected.Group("/upload")
+			{
+				upload.Post("/file", handlers.UploadFile)
+				upload.Post("/files", handlers.UploadMultipleFiles)
+				upload.Delete("/file/:public_id", handlers.DeleteFile)
+				upload.Get("/file/:public_id", handlers.GetFileInfo)
+				upload.Get("/file/:public_id/urls", handlers.GenerateImageURLs)
+			}
+
+			// Notification routes
+			notifications := protected.Group("/notifications")
+			{
+				notifications.Get("", handlers.GetUserNotifications)
+				notifications.Put("/:id/read", handlers.MarkNotificationAsRead)
 			}
 		}
 

@@ -2,9 +2,12 @@ package utils
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -62,7 +65,11 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 
 // HashPassword creates an Argon2id hash of the password
 func HashPassword(password string) (string, error) {
-	salt := []byte("hardware-store-salt") // In production, use a random salt per user
+	// Generate a random salt for each user
+	salt := make([]byte, 32)
+	if _, err := rand.Read(salt); err != nil {
+		return "", fmt.Errorf("failed to generate salt: %w", err)
+	}
 
 	hash := argon2.IDKey(
 		[]byte(password),
@@ -70,31 +77,49 @@ func HashPassword(password string) (string, error) {
 		1,       // time cost
 		64*1024, // memory cost (64MB)
 		4,       // parallelism
-		32,      // key length
+		32,      // password length
 	)
 
-	// Convert to base64 for safe storage
-	return base64.StdEncoding.EncodeToString(hash), nil
+	// Encode both salt and hash to base64
+	encodedSalt := base64.RawStdEncoding.EncodeToString(salt)
+	encodedHash := base64.RawStdEncoding.EncodeToString(hash)
+
+	// Return salt:hash format for storage
+	return encodedSalt + ":" + encodedHash, nil
 }
 
 // VerifyPassword verifies a password against its hash
 func VerifyPassword(password, hash string) bool {
-	salt := []byte("hardware-store-salt") // In production, extract salt from hash
+	// Split the stored hash to get salt and hash
+	parts := strings.Split(hash, ":")
+	if len(parts) != 2 {
+		return false
+	}
 
+	encodedSalt := parts[0]
+	encodedHash := parts[1]
+
+	// Decode the salt
+	salt, err := base64.RawStdEncoding.DecodeString(encodedSalt)
+	if err != nil {
+		return false
+	}
+
+	// Decode the stored hash
+	storedHash, err := base64.RawStdEncoding.DecodeString(encodedHash)
+	if err != nil {
+		return false
+	}
+
+	// Compute hash with the same salt
 	computedHash := argon2.IDKey(
 		[]byte(password),
 		salt,
 		1,       // time cost
 		64*1024, // memory cost (64MB)
 		4,       // parallelism
-		32,      // key length
+		32,      // password length
 	)
-
-	// Decode the stored hash and compare
-	storedHash, err := base64.StdEncoding.DecodeString(hash)
-	if err != nil {
-		return false
-	}
 
 	return bytes.Equal(computedHash, storedHash)
 }

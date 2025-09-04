@@ -3,15 +3,20 @@ package handlers
 import (
 	"backend/config"
 	"backend/models"
+	"backend/services"
 	"backend/utils"
+	"fmt"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
+	uuid "github.com/satori/go.uuid"
 )
 
 type RegisterRequest struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FullName  string `json:"full_name"`
-	Phone     string `json:"phone"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	FullName string `json:"full_name"`
+	Phone    string `json:"phone"`
 }
 
 type LoginRequest struct {
@@ -245,8 +250,27 @@ func RequestPasswordReset(c *fiber.Ctx) error {
 		})
 	}
 
-	// Generate reset token (in production, this would be sent via email)
-	// For now, we'll just return a success message
+	// Generate reset token
+	resetToken := uuid.NewV4().String()
+
+	// Store reset token in database with 1 hour expiry
+	expiry := time.Now().Add(1 * time.Hour)
+	if err := config.DB.Model(&user).Updates(map[string]interface{}{
+		"reset_token":        resetToken,
+		"reset_token_expiry": expiry,
+	}).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate reset token",
+		})
+	}
+
+	// Send password reset email
+	notificationService := services.NewNotificationService()
+	if err := notificationService.SendPasswordResetNotification(&user, resetToken); err != nil {
+		// Log error but don't fail the request
+		fmt.Printf("Failed to send password reset email: %v\n", err)
+	}
+
 	return c.JSON(fiber.Map{
 		"message": "If an account with that email exists, a password reset link has been sent",
 	})
@@ -277,8 +301,33 @@ func ConfirmPasswordReset(c *fiber.Ctx) error {
 		})
 	}
 
-	// In production, validate the reset token and find the user
-	// For now, we'll just return a success message
+	// Find user by reset token
+	var user models.User
+	if err := config.DB.Where("reset_token = ? AND reset_token_expiry > ?", req.Token, time.Now()).First(&user).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid or expired reset token",
+		})
+	}
+
+	// Hash new password
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to process password",
+		})
+	}
+
+	// Update password and clear reset token
+	if err := config.DB.Model(&user).Updates(map[string]interface{}{
+		"password_hash":      hashedPassword,
+		"reset_token":        nil,
+		"reset_token_expiry": nil,
+	}).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update password",
+		})
+	}
+
 	return c.JSON(fiber.Map{
 		"message": "Password reset successfully",
 	})

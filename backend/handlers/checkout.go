@@ -144,8 +144,12 @@ func PlaceOrder(c *fiber.Ctx) error {
 
 // GetShippingOptions returns available shipping options
 func GetShippingOptions(c *fiber.Ctx) error {
-	// For now, return basic shipping options
-	// In production, this would integrate with shipping providers
+	// TODO: In production, integrate with real shipping providers like:
+	// - FedEx API
+	// - UPS API
+	// - DHL API
+	// - Local courier services
+	// - Calculate real-time shipping rates based on weight, dimensions, and destination
 	shippingOptions := []map[string]interface{}{
 		{
 			"id":             "standard",

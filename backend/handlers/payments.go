@@ -3,8 +3,11 @@ package handlers
 import (
 	"backend/config"
 	"backend/models"
+	"backend/services"
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 // InitiatePayment starts a payment process
@@ -17,9 +20,9 @@ func InitiatePayment(c *fiber.Ctx) error {
 	}
 
 	var req struct {
-		OrderID      string `json:"order_id"`
-		PaymentMethod string `json:"payment_method"`
-		Amount       float64 `json:"amount"`
+		OrderID       string  `json:"order_id"`
+		PaymentMethod string  `json:"payment_method"`
+		Amount        float64 `json:"amount"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
@@ -71,24 +74,60 @@ func InitiatePayment(c *fiber.Ctx) error {
 		}
 	}
 
-	// In production, this would integrate with Paystack or other payment providers
-	// For now, we'll simulate a payment initiation
-	paymentURL := "/payment/" + payment.ID.String() + "/complete"
+	// Initialize Paystack payment
+	paystackService := services.NewPaystackService()
+
+	// Get order with user details for Paystack
+	var orderWithUser models.Order
+	if err := config.DB.Preload("User").Where("id = ?", req.OrderID).First(&orderWithUser).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get order details",
+		})
+	}
+
+	paystackResponse, err := paystackService.InitiatePayment(&orderWithUser, orderWithUser.User)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate payment with Paystack",
+		})
+	}
 
 	return c.JSON(fiber.Map{
-		"message": "Payment initiated successfully",
+		"message":    "Payment initiated successfully",
 		"payment_id": payment.ID,
-		"payment_url": paymentURL,
-		"amount": req.Amount,
+		"amount":     req.Amount,
+		"paystack": fiber.Map{
+			"authorization_url": paystackResponse.Data.AuthorizationURL,
+			"access_code":       paystackResponse.Data.AccessCode,
+			"reference":         paystackResponse.Data.Reference,
+		},
 	})
 }
 
 // PaymentWebhook handles payment provider webhooks
 func PaymentWebhook(c *fiber.Ctx) error {
-	// In production, this would verify the webhook signature from Paystack
-	// For now, we'll just return a success message
+	// Get the webhook payload
+	payload := c.Body()
+
+	// Get the signature header
+	signature := c.Get("X-Paystack-Signature")
+	if signature == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Missing webhook signature",
+		})
+	}
+
+	// Process the webhook using Paystack service
+	paystackService := services.NewPaystackService()
+	err := paystackService.ProcessWebhook(payload, signature)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": fmt.Sprintf("Webhook processing failed: %v", err),
+		})
+	}
+
 	return c.JSON(fiber.Map{
-		"message": "Webhook received successfully",
+		"message": "Webhook processed successfully",
 	})
 }
 

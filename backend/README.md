@@ -21,6 +21,12 @@ A robust e-commerce backend API built with Go, Fiber, GORM, and PostgreSQL for a
 - **Authentication**: JWT
 - **Password Hashing**: Argon2id
 - **Validation**: Manual validation (can be enhanced with validator package)
+- **Payment Gateway**: Paystack integration
+- **Email Service**: SendGrid integration
+- **SMS Service**: Twilio integration
+- **File Storage**: Cloudinary integration
+- **Caching**: Redis integration
+- **Notifications**: Multi-channel notification system
 
 ## Project Structure
 
@@ -59,6 +65,15 @@ backend/
 - `GET /api/orders` - Get user orders
 - `GET /api/orders/:id` - Get order details
 - `POST /api/orders` - Create new order
+- `POST /api/payments/initiate` - Initiate payment with Paystack
+- `GET /api/payments/:id/status` - Get payment status
+- `POST /api/upload/file` - Upload single file to Cloudinary
+- `POST /api/upload/files` - Upload multiple files to Cloudinary
+- `DELETE /api/upload/file/:public_id` - Delete file from Cloudinary
+- `GET /api/upload/file/:public_id` - Get file information
+- `GET /api/upload/file/:public_id/urls` - Generate image URLs
+- `GET /api/notifications` - Get user notifications
+- `PUT /api/notifications/:id/read` - Mark notification as read
 
 ### Admin Routes (Requires Admin Role)
 - `GET /api/admin/categories` - List categories
