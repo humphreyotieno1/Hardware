@@ -21,17 +21,26 @@ export interface LoginRequest {
   password: string
 }
 
+export interface UpdateProfileRequest {
+  full_name: string
+  phone?: string
+}
+
 export interface RegisterRequest {
   email: string
   password: string
-  phone?: string
   full_name: string
+  phone?: string
 }
 
 export interface AuthResponse {
   user: User
   token: string
   refresh_token: string
+}
+
+export interface RequestPasswordResetRequest {
+  email: string
 }
 
 // Product Types

@@ -30,7 +30,10 @@ export function LoginForm() {
 
     try {
       await login({ email, password })
-      router.push("/account")
+      // Get redirect URL from query params or default to home
+      const urlParams = new URLSearchParams(window.location.search)
+      const redirectTo = urlParams.get('redirect') || '/'
+      router.push(redirectTo)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
     } finally {

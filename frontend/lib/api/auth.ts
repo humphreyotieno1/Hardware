@@ -1,5 +1,5 @@
 import apiClient from "./client"
-import type { AuthResponse, LoginRequest, RegisterRequest, User } from "./types"
+import type { AuthResponse, LoginRequest, RegisterRequest, User, RequestPasswordResetRequest, UpdateProfileRequest } from "./types"
 
 export const authApi = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -15,11 +15,16 @@ export const authApi = {
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>("/auth/register", userData)
 
-    if (response.data?.token) {
-      apiClient.setToken(response.data.token)
-    }
+    // Don't automatically set token - user needs to explicitly log in
+    // if (response.data?.token) {
+    //   apiClient.setToken(response.data.token)
+    // }
 
     return response.data!
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    await apiClient.post("/auth/password/reset", { token, password })
   },
 
   async logout(): Promise<void> {
@@ -30,17 +35,17 @@ export const authApi = {
     }
   },
 
-  async requestPasswordReset(email: string): Promise<void> {
+  async requestPasswordReset(email: RequestPasswordResetRequest): Promise<void> {
     await apiClient.post("/auth/password/reset", { email })
   },
 
-  async resetPassword(token: string, password: string): Promise<void> {
-    await apiClient.post("/auth/password/reset/confirm", { token, password })
+  async getCurrentUser(): Promise<User> {
+    const response = await apiClient.get<User>("/profile")
+    return response.data!
   },
 
-  async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>("/auth/me")
-    return response.data!
+  async updateProfile(profile: UpdateProfileRequest): Promise<void> {
+    await apiClient.put("/profile", profile)
   },
 
   async refreshToken(): Promise<AuthResponse> {
