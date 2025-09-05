@@ -13,8 +13,7 @@ import {
   HardHat, 
   Settings as Screwdriver,
   Package,
-  Star, 
-  TrendingUp 
+  ArrowRight
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { productsApi } from "@/lib/api/products"
@@ -29,7 +28,6 @@ interface CategoryWithCount extends Category {
   priceRange: string
   popular: boolean
   discount: string
-  backgroundImage: string
 }
 
 const categoryData = [
@@ -41,8 +39,7 @@ const categoryData = [
     bgColor: "bg-orange-50",
     priceRange: "From KES 500",
     popular: true,
-    discount: "Bulk discounts available",
-    backgroundImage: "/images/hero/crown.jpg"
+    discount: "Bulk discounts available"
   },
   {
     slug: "power-tools",
@@ -52,8 +49,7 @@ const categoryData = [
     bgColor: "bg-blue-50",
     priceRange: "From KES 8,000",
     popular: true,
-    discount: "Save up to 20%",
-    backgroundImage: "/images/hero/tools.jpg"
+    discount: "Save up to 20%"
   },
   {
     slug: "hand-tools",
@@ -63,8 +59,7 @@ const categoryData = [
     bgColor: "bg-gray-50",
     priceRange: "From KES 1,200",
     popular: false,
-    discount: "Professional grade",
-    backgroundImage: "/images/hero/tools.jpg"
+    discount: "Professional grade"
   },
   {
     slug: "electrical",
@@ -74,8 +69,7 @@ const categoryData = [
     bgColor: "bg-yellow-50",
     priceRange: "From KES 300",
     popular: true,
-    discount: "Wide selection",
-    backgroundImage: "/images/hero/crown.jpg"
+    discount: "Wide selection"
   },
   {
     slug: "plumbing",
@@ -85,8 +79,7 @@ const categoryData = [
     bgColor: "bg-cyan-50",
     priceRange: "From KES 150",
     popular: false,
-    discount: "Quality guaranteed",
-    backgroundImage: "/images/hero/tools.jpg"
+    discount: "Quality guaranteed"
   },
   {
     slug: "paint",
@@ -96,8 +89,7 @@ const categoryData = [
     bgColor: "bg-green-50",
     priceRange: "From KES 800",
     popular: true,
-    discount: "Easter sale 15% off",
-    backgroundImage: "/images/hero/crown.jpg"
+    discount: "Easter sale 15% off"
   },
   {
     slug: "hardware",
@@ -107,8 +99,7 @@ const categoryData = [
     bgColor: "bg-purple-50",
     priceRange: "From KES 50",
     popular: false,
-    discount: "Bulk pricing",
-    backgroundImage: "/images/hero/tools.jpg"
+    discount: "Bulk pricing"
   },
   {
     slug: "tiles-sanitary",
@@ -118,12 +109,11 @@ const categoryData = [
     bgColor: "bg-red-50",
     priceRange: "From KES 1,500",
     popular: true,
-    discount: "Installation support",
-    backgroundImage: "/images/hero/tools.jpg"
+    discount: "Installation support"
   }
 ]
 
-export function CategoryGrid() {
+export function CategoriesListing() {
   const [categoriesWithCounts, setCategoriesWithCounts] = useState<CategoryWithCount[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -152,8 +142,7 @@ export function CategoryGrid() {
                   bgColor: "bg-gray-50",
                   priceRange: "From KES 100",
                   popular: false,
-                  discount: "Quality products",
-                  backgroundImage: "/images/hero/tools.jpg"
+                  discount: "Quality products"
                 })
               } as CategoryWithCount
             } catch (error) {
@@ -169,8 +158,7 @@ export function CategoryGrid() {
                   bgColor: "bg-gray-50",
                   priceRange: "From KES 100",
                   popular: false,
-                  discount: "Quality products",
-                  backgroundImage: "/images/hero/tools.jpg"
+                  discount: "Quality products"
                 })
               } as CategoryWithCount
             }
@@ -187,6 +175,7 @@ export function CategoryGrid() {
             name: cat.slug.split('-').map(word => 
               word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' '),
+            slug: cat.slug,
             productCount: 0,
             ...cat
           }))
@@ -204,9 +193,9 @@ export function CategoryGrid() {
       <section className="py-12 sm:py-16 lg:py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Shop by Category
-            </h2>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Browse Categories
+            </h1>
             <p className="text-muted-foreground">
               Loading categories...
             </p>
@@ -231,27 +220,18 @@ export function CategoryGrid() {
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-background">
       <div className="container mx-auto px-4">
-        {/* Enhanced Header */}
-        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <div className="space-y-3 sm:space-y-4 animate-fade-in">
-            <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium">
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Most Popular Categories</span>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 text-balance">
-              Shop by Category
-            </h2>
-            
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto text-pretty leading-relaxed px-2">
-              Find exactly what you need from our comprehensive selection of hardware and construction supplies. 
-              Quality products at competitive prices with expert support.
-            </p>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Browse Categories
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Explore our comprehensive selection of hardware and construction supplies organized by category
+          </p>
         </div>
 
-        {/* Enhanced Category Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {categoriesWithCounts.map((category, index) => {
             const IconComponent = category.icon
             return (
@@ -262,36 +242,29 @@ export function CategoryGrid() {
               >
                 <Link href={`/categories/${category.slug}`}>
                   <Card className={`h-full hover:shadow-xl transition-all duration-300 group border-2 hover:border-primary/30 relative overflow-hidden ${category.bgColor}`}>
-                    {/* Faded Background Image */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300"
-                      style={{ backgroundImage: `url(${category.backgroundImage})` }}
-                    />
-                    {/* Content Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
-                    <CardContent className="p-4 sm:p-6 text-center relative z-10">
+                    <CardContent className="p-6 text-center relative z-10">
                       {/* Popular Badge */}
                       {category.popular && (
-                        <div className="absolute -top-2 sm:-top-3 -right-2 sm:-right-3 bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-bold shadow-lg">
-                          <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        <div className="absolute -top-2 -right-2 bg-primary text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+                          Popular
                         </div>
                       )}
                       
                       {/* Icon */}
-                      <div className="mb-3 sm:mb-4">
-                        <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full bg-white shadow-md group-hover:shadow-lg transition-all duration-300`}>
+                      <div className="mb-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md group-hover:shadow-lg transition-all duration-300">
                           <IconComponent
-                            className={`h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 ${category.color} group-hover:scale-110 transition-transform duration-300`}
+                            className={`h-8 w-8 ${category.color} group-hover:scale-110 transition-transform duration-300`}
                           />
                         </div>
                       </div>
                       
                       {/* Category Info */}
-                      <h3 className="font-bold text-base sm:text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+                      <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
                         {category.name}
                       </h3>
                       
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 text-pretty leading-relaxed">
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                         {category.description}
                       </p>
                       
@@ -304,22 +277,20 @@ export function CategoryGrid() {
                       </div>
                       
                       {/* Price Range */}
-                      <div className="text-xs sm:text-sm font-semibold text-foreground mb-2">
+                      <div className="text-sm font-semibold text-foreground mb-2">
                         {category.priceRange}
                       </div>
                       
                       {/* Discount/Feature */}
-                      <div className="text-xs text-primary font-medium">
+                      <div className="text-xs text-primary font-medium mb-4">
                         {category.discount}
                       </div>
                       
                       {/* Hover Effect */}
-                      <div className="mt-3 sm:mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="inline-flex items-center text-primary text-xs sm:text-sm font-medium">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="inline-flex items-center text-primary text-sm font-medium">
                           <span>Explore {category.name}</span>
-                          <svg className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                          <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-300" />
                         </div>
                       </div>
                     </CardContent>
@@ -331,26 +302,26 @@ export function CategoryGrid() {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-8 sm:mt-12 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-          <div className="bg-muted/50 rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
-              Can't Find What You're Looking For?
+        <div className="text-center mt-12">
+          <div className="bg-muted/50 rounded-2xl p-8 max-w-2xl mx-auto">
+            <h3 className="text-2xl font-bold text-foreground mb-4">
+              Need Help Finding Something?
             </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+            <p className="text-muted-foreground mb-6">
               Our expert team can help you source any specific products or provide technical advice for your project.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/search"
-                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
               >
-                Browse All Products
+                Search All Products
               </Link>
               <Link
-                href="/contact"
-                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-primary-foreground transition-colors text-sm sm:text-base"
+                href="/services"
+                className="inline-flex items-center justify-center px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
               >
-                Contact Our Experts
+                Get Expert Help
               </Link>
             </div>
           </div>

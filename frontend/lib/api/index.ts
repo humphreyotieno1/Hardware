@@ -1,5 +1,6 @@
 // Main API exports
-export { default as apiClient, ApiClient, ApiError } from "./client"
+export { default as apiClient, apiClient as apiClientNamed, ApiClient } from "./client"
+export type * from "./types"
 export { authApi } from "./auth"
 export { productsApi } from "./products"
 export { cartApi } from "./cart"

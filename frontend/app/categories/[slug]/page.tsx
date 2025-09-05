@@ -15,12 +15,14 @@ interface CategoryPageProps {
   }
 }
 
-export default function CategoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+  const { slug } = await params
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <CategoryProductListing categorySlug={params.slug} searchParams={searchParams} />
+        <CategoryProductListing categorySlug={slug} searchParams={searchParams} />
       </main>
       <Footer />
     </div>

@@ -8,135 +8,121 @@ const brands = [
   {
     id: 1,
     name: "DeWalt",
-    logo: "/images/hero/tools.jpg",
-    fallback: "DeWalt",
-    url: "/brands/dewalt",
-    category: "Power Tools"
+    logo: "/images/hero/dewalt.png",
+    fallback: "DW",
+    url: "/brands/dewalt"
   },
   {
     id: 2,
     name: "Makita",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Makita",
-    url: "/brands/makita",
-    category: "Power Tools"
+    logo: "/images/hero/makita.png",
+    fallback: "MK",
+    url: "/brands/makita"
   },
   {
     id: 3,
     name: "Milwaukee",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Milwaukee",
-    url: "/brands/milwaukee",
-    category: "Power Tools"
+    logo: "/images/hero/milwaukee.png",
+    fallback: "MW",
+    url: "/brands/milwaukee"
   },
   {
     id: 4,
     name: "Bosch",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Bosch",
-    url: "/brands/bosch",
-    category: "Power Tools"
+    logo: "/images/hero/bosch.png",
+    fallback: "BC",
+    url: "/brands/bosch"
   },
   {
     id: 5,
     name: "Stanley",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Stanley",
-    url: "/brands/stanley",
-    category: "Hand Tools"
+    logo: "/images/hero/stanley.png",
+    fallback: "ST",
+    url: "/brands/stanley"
   },
   {
     id: 6,
     name: "Craftsman",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Craftsman",
-    url: "/brands/craftsman",
-    category: "Hand Tools"
+    logo: "/images/hero/craftsman.png",
+    fallback: "CM",
+    url: "/brands/craftsman"
   },
   {
     id: 7,
     name: "Klein Tools",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Klein",
-    url: "/brands/klein",
-    category: "Electrical"
+    logo: "/images/hero/klein.png",
+    fallback: "KL",
+    url: "/brands/klein"
   },
   {
     id: 8,
     name: "Southwire",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Southwire",
-    url: "/brands/southwire",
-    category: "Electrical"
+    logo: "/images/hero/southwire.png",
+    fallback: "SW",
+    url: "/brands/southwire"
   },
   {
     id: 9,
     name: "Ridgid",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Ridgid",
-    url: "/brands/ridgid",
-    category: "Plumbing"
+    logo: "/images/hero/ridgid.png",
+    fallback: "RG",
+    url: "/brands/ridgid"
   },
   {
     id: 10,
     name: "Knipex",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Knipex",
-    url: "/brands/knipex",
-    category: "Hand Tools"
+    logo: "/images/hero/knipex.png",
+    fallback: "KP",
+    url: "/brands/knipex"
   },
   {
     id: 11,
     name: "Wera",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Wera",
-    url: "/brands/wera",
-    category: "Hand Tools"
+    logo: "/images/hero/wera.png",
+    fallback: "WR",
+    url: "/brands/wera"
   },
   {
     id: 12,
     name: "Hilti",
-    logo: "/images/hero/tools.jpg",
-    fallback: "Hilti",
-    url: "/brands/hilti",
-    category: "Construction"
+    logo: "/images/hero/hilti.png",
+    fallback: "HT",
+    url: "/brands/hilti"
   }
 ]
 
 export function BrandsSection() {
   const [isHovered, setIsHovered] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [scrollPosition, setScrollPosition] = useState(0)
+  const animationRef = useRef<number>()
 
   useEffect(() => {
-    let animationId: number
-    let currentPosition = scrollPosition
-
     const animate = () => {
       if (!isHovered && scrollRef.current) {
-        currentPosition += 0.5 // Adjust speed here
-        if (currentPosition >= scrollRef.current.scrollWidth / 2) {
-          currentPosition = 0
+        const currentScroll = scrollRef.current.scrollLeft
+        const maxScroll = scrollRef.current.scrollWidth - scrollRef.current.clientWidth
+        const newScroll = currentScroll + 1.5 // Increased speed for more visible movement
+        
+        if (newScroll >= maxScroll) {
+          scrollRef.current.scrollLeft = 0
+        } else {
+          scrollRef.current.scrollLeft = newScroll
         }
-        setScrollPosition(currentPosition)
-        scrollRef.current.scrollLeft = currentPosition
       }
-      animationId = requestAnimationFrame(animate)
+      animationRef.current = requestAnimationFrame(animate)
     }
 
-    animationId = requestAnimationFrame(animate)
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [isHovered, scrollPosition])
+  }, [isHovered])
 
   const handleBrandClick = (brand: typeof brands[0]) => {
-    // You can add analytics tracking here
     console.log(`Brand clicked: ${brand.name}`)
-    // The Link component will handle the navigation
   }
 
   return (
@@ -146,7 +132,7 @@ export function BrandsSection() {
         <div className="text-center mb-8 sm:mb-12">
           <div className="animate-fade-in">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
-              Trusted by Professionals
+              Trusted Brands
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
               We partner with the world's leading brands to provide you with quality tools and materials
@@ -161,13 +147,13 @@ export function BrandsSection() {
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Gradient Overlays for Smooth Edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 lg:w-20 bg-gradient-to-r from-muted/30 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 lg:w-20 bg-gradient-to-l from-muted/30 to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 lg:w-16 bg-gradient-to-r from-muted/30 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 lg:w-16 bg-gradient-to-l from-muted/30 to-transparent z-10 pointer-events-none" />
 
           {/* Scrollable Brands */}
           <div
             ref={scrollRef}
-            className="flex space-x-8 sm:space-x-12 md:space-x-16 lg:space-x-20 py-6 sm:py-8"
+            className="flex space-x-6 sm:space-x-8 md:space-x-10 lg:space-x-12 py-4 sm:py-6"
             style={{
               scrollBehavior: isHovered ? 'smooth' : 'auto'
             }}
@@ -176,8 +162,8 @@ export function BrandsSection() {
             {[...brands, ...brands].map((brand, index) => (
               <div
                 key={`${brand.id}-${index}`}
-                className="animate-fade-in-up hover:scale-110 hover:-translate-y-1 transition-all duration-200 flex-shrink-0"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="animate-fade-in-up hover:scale-105 transition-all duration-200 flex-shrink-0"
+                style={{ animationDelay: `${index * 30}ms` }}
               >
                 <Link
                   href={brand.url}
@@ -185,38 +171,22 @@ export function BrandsSection() {
                   className="group block"
                   aria-label={`Visit ${brand.name} brand page`}
                 >
-                  <div className="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-sm hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-primary/30">
-                    {/* Logo Container */}
-                    <div className="w-20 h-12 sm:w-24 sm:h-16 md:w-32 md:h-20 flex items-center justify-center mb-2 sm:mb-3">
+                  <div className="bg-white rounded-full p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300 border border-border/50 hover:border-primary/30">
+                    {/* Logo Container - Smaller and Rounded */}
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
                       {brand.logo ? (
                         <img
                           src={brand.logo}
                           alt={`${brand.name} logo`}
-                          className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 rounded-full"
                         />
                       ) : (
-                        <div className="text-center">
-                          <div className="text-sm sm:text-lg md:text-xl font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                        <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
+                          <span className="text-xs sm:text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">
                             {brand.fallback}
-                          </div>
+                          </span>
                         </div>
                       )}
-                    </div>
-
-                    {/* Brand Info */}
-                    <div className="text-center">
-                      <h3 className="font-semibold text-xs sm:text-sm md:text-base text-foreground group-hover:text-primary transition-colors mb-1">
-                        {brand.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {brand.category}
-                      </p>
-                      
-                      {/* Visit Link */}
-                      <div className="flex items-center justify-center space-x-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span>Visit</span>
-                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                      </div>
                     </div>
                   </div>
                 </Link>
@@ -226,8 +196,8 @@ export function BrandsSection() {
 
           {/* Hover Indicator */}
           {isHovered && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm pointer-events-none animate-fade-in">
-              <span className="text-xs sm:text-sm font-medium">Scroll paused</span>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none animate-fade-in">
+              <span className="text-xs font-medium">Scroll paused</span>
             </div>
           )}
         </div>
