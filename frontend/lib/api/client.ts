@@ -20,9 +20,13 @@ export class ApiClient {
       ...config.defaultHeaders,
     }
 
-    // Load token from localStorage if available
+    // Load token from localStorage or cookies if available
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("auth_token")
+      this.token = localStorage.getItem("auth_token") || 
+        document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1] || null
     }
   }
 
@@ -31,8 +35,12 @@ export class ApiClient {
     if (typeof window !== "undefined") {
       if (token) {
         localStorage.setItem("auth_token", token)
+        // Also set cookie for middleware compatibility
+        document.cookie = `auth_token=${token}; path=/; secure; samesite=strict; max-age=${7 * 24 * 60 * 60}` // 7 days
       } else {
         localStorage.removeItem("auth_token")
+        // Clear cookie
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       }
     }
   }
@@ -145,7 +153,7 @@ export class ApiClient {
 
 // Create default client instance
 const apiClient = new ApiClient({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://hardware-backend-ocgv.onrender.com/api" || "http://localhost:8080/api",
   timeout: 15000,
 })
 

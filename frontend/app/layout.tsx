@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/lib/hooks/use-auth"
 import { CartProvider } from "@/lib/hooks/use-cart"
+import { Toaster } from "@/components/ui/toaster"
+import { AuthErrorBoundary } from "@/components/auth/auth-error-boundary"
 import { Suspense } from "react"
 
 const montserrat = Montserrat({
@@ -28,10 +30,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${montserrat.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <AuthProvider>
-            <CartProvider>{children}</CartProvider>
-          </AuthProvider>
+          <AuthErrorBoundary>
+            <AuthProvider>
+              <CartProvider>{children}</CartProvider>
+            </AuthProvider>
+          </AuthErrorBoundary>
         </Suspense>
+        <Toaster />
         <Analytics />
       </body>
     </html>

@@ -263,7 +263,7 @@ export function Header() {
                   onMouseLeave={() => setHoveredCategory(null)}
                 >
                   <Link
-                    href={`/c/${category.slug}`}
+                    href={`/category/${category.slug}`}
                     className="flex items-center space-x-1 py-2 sm:py-3 lg:py-4 px-2 text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
                   >
                     <span>{category.name}</span>

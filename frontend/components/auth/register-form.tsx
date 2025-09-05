@@ -59,7 +59,8 @@ export function RegisterForm() {
         phone: formData.phone || undefined,
         password: formData.password,
       })
-      router.push("/account")
+      // Redirect to login page after successful registration
+      router.push("/auth/login")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")
     } finally {
