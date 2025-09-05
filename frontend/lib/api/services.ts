@@ -1,4 +1,4 @@
-import { apiClient } from "./client"
+import apiClient from "./client"
 import type { ServiceRequest } from "../types"
 
 export const servicesApi = {

@@ -132,7 +132,7 @@ export function HeroSection() {
               <div className="space-y-3 sm:space-y-4 animate-fade-in">
                 {/* Special Offer Badge */}
                 <div className="inline-block bg-primary/90 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-sm animate-scale-in">
-                  🎯 Special Offers - Save up to 25%
+                  🎯 Get started. Save Big
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-balance leading-tight drop-shadow-lg">
@@ -147,7 +147,7 @@ export function HeroSection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 pt-2 sm:pt-4">
                   <div className="flex items-center space-x-2 text-white/90">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full flex-shrink-0"></div>
-                    <span className="text-xs sm:text-sm">Free delivery over KES 5,000</span>
+                    <span className="text-xs sm:text-sm">Fast and reliable delivery</span>
                   </div>
                   <div className="flex items-center space-x-2 text-white/90">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full flex-shrink-0"></div>
@@ -176,7 +176,7 @@ export function HeroSection() {
                     className="border-white text-white hover:bg-white hover:text-primary bg-transparent text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6"
                     asChild
                   >
-                    <Link href="/pages/services">View Services</Link>
+                    <Link href="/services">View Services</Link>
                   </Button>
                 </div>
               </div>
@@ -190,7 +190,7 @@ export function HeroSection() {
                     <Wrench className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 mx-auto mb-2 sm:mb-3 lg:mb-4 text-secondary" />
                     <h3 className="font-semibold mb-1 sm:mb-2 lg:mb-2 text-white text-sm sm:text-base">Professional Tools</h3>
                     <p className="text-xs sm:text-sm text-white/80">High-quality tools for every trade</p>
-                    <div className="mt-2 sm:mt-3 text-xs text-white/60">Starting from KES 2,500</div>
+                    <div className="mt-2 sm:mt-3 text-xs text-white/60">Get quality tools at affordable prices</div>
                   </div>
                   
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 text-center border border-white/20 hover:bg-white/20 transition-all duration-300 animate-slide-in-right">
@@ -214,9 +214,9 @@ export function HeroSection() {
               {/* Floating Promo Card */}
               <div className="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-primary text-white p-3 sm:p-4 rounded-lg shadow-lg border border-primary/20 animate-bounce-in">
                 <div className="text-center">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">15% OFF</div>
-                  <div className="text-xs">Easter Sale</div>
-                  <div className="text-xs opacity-80">Limited Time</div>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold">Save Big</div>
+                  <div className="text-xs">Limited Time</div>
+                  <div className="text-xs opacity-80">Get Started</div>
                 </div>
               </div>
             </div>
@@ -228,7 +228,7 @@ export function HeroSection() {
                   <div className="text-center">
                     <Wrench className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-secondary" />
                     <p className="text-xs sm:text-sm text-white/80">Tools</p>
-                    <div className="text-xs text-white/60">From KES 2,500</div>
+                    <div className="text-xs text-white/60">Get quality tools at affordable prices</div>
                   </div>
                   <div className="text-center">
                     <Zap className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-secondary" />
@@ -244,7 +244,7 @@ export function HeroSection() {
                 
                 {/* Mobile Promo Badge */}
                 <div className="mt-3 sm:mt-4 bg-primary/90 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-semibold">
-                  🎯 15% OFF Easter Sale
+                  🎯 Get Started. Save Big
                 </div>
               </div>
             </div>

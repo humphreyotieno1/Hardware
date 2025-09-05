@@ -36,7 +36,7 @@ export const productsApi = {
     page: number
     limit: number
   }> {
-    const response = await apiClient.get("/products", { ...params, category: categorySlug })
+    const response = await apiClient.get("/catalog/products", { ...params, category: categorySlug })
     return response.data! as {
       products: Product[]
       total: number

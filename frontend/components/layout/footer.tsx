@@ -1,19 +1,59 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, ArrowUp, MessageCircle } from "lucide-react"
+import { useState, useEffect } from "react"
 
 export function Footer() {
+  const [isVisible, setIsVisible] = useState(false)
+
+  // Show button when page is scrolled down
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true)
+      } else {
+        setIsVisible(false)
+      }
+    }
+
+    window.addEventListener('scroll', toggleVisibility)
+    return () => window.removeEventListener('scroll', toggleVisibility)
+  }, [])
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  // WhatsApp and Call functions
+  const openWhatsApp = () => {
+    const phoneNumber = "254700000000" // Replace with actual phone number
+    const message = "Hello! I'm interested in your hardware products."
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+    window.open(url, '_blank')
+  }
+
+  const makeCall = () => {
+    window.location.href = "tel:+254700000000" // Replace with actual phone number
+  }
+
   return (
-    <footer className="bg-card border-t">
+    <>
+      <footer className="bg-card border-t">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">HS</span>
+                <span className="text-primary-foreground font-bold text-sm">GV</span>
               </div>
-              <span className="font-bold text-xl text-foreground">Hardware Store</span>
+              <span className="font-bold text-xl text-foreground">Grahad Ventures Limited</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Your trusted partner for construction and hardware supplies. Serving professionals and DIY enthusiasts
@@ -102,15 +142,15 @@ export function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">123 Hardware Street, Nairobi, Kenya</span>
+                <span className="text-muted-foreground">Siaya, Kenya</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">+254 700 123 456</span>
+                <span className="text-muted-foreground">+254 700 000 000</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">info@hardwarestore.co.ke</span>
+                <span className="text-muted-foreground">geocelenterprises20@gmail.com</span>
               </div>
             </div>
           </div>
@@ -118,7 +158,7 @@ export function Footer() {
 
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} Hardware Store. All rights reserved.
+            © {new Date().getFullYear()} Grahad Ventures Limited. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link
@@ -134,5 +174,41 @@ export function Footer() {
         </div>
       </div>
     </footer>
+
+    {/* Floating Action Buttons */}
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col space-y-3">
+      {/* Back to Top Button */}
+      {isVisible && (
+        <Button
+          onClick={scrollToTop}
+          size="sm"
+          className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </Button>
+      )}
+
+      {/* WhatsApp Button */}
+      <Button
+        onClick={openWhatsApp}
+        size="sm"
+        className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-green-500 hover:bg-green-600 text-white"
+        aria-label="Contact us on WhatsApp"
+      >
+        <MessageCircle className="h-4 w-4" />
+      </Button>
+
+      {/* Call Us Button */}
+      <Button
+        onClick={makeCall}
+        size="sm"
+        className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-blue-500 hover:bg-blue-600 text-white"
+        aria-label="Call us now"
+      >
+        <Phone className="h-4 w-4" />
+      </Button>
+    </div>
+    </>
   )
 }

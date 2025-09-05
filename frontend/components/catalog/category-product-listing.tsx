@@ -232,6 +232,7 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
                       {viewMode === "grid" && (
                         <>
                           <Button
+                            key="wishlist-btn"
                             variant="ghost"
                             size="sm"
                             className="absolute top-2 right-2 h-8 w-8 p-0 bg-background/80 hover:bg-background"
@@ -239,12 +240,12 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
                             <Heart className="h-4 w-4" />
                           </Button>
                           {product.stock_quantity < 10 && product.stock_quantity > 0 && (
-                            <Badge variant="destructive" className="absolute top-2 left-2">
+                            <Badge key="low-stock" variant="destructive" className="absolute top-2 left-2">
                               Low Stock
                             </Badge>
                           )}
                           {product.stock_quantity === 0 && (
-                            <Badge variant="secondary" className="absolute top-2 left-2">
+                            <Badge key="out-of-stock" variant="secondary" className="absolute top-2 left-2">
                               Out of Stock
                             </Badge>
                           )}
@@ -276,9 +277,9 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
                       {viewMode === "list" && (
                         <div className="flex items-center space-x-2">
                           {product.stock_quantity < 10 && product.stock_quantity > 0 && (
-                            <Badge variant="destructive">Low Stock</Badge>
+                            <Badge key="low-stock-list" variant="destructive">Low Stock</Badge>
                           )}
-                          {product.stock_quantity === 0 && <Badge variant="secondary">Out of Stock</Badge>}
+                          {product.stock_quantity === 0 && <Badge key="out-of-stock-list" variant="secondary">Out of Stock</Badge>}
                         </div>
                       )}
 

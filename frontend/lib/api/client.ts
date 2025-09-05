@@ -157,4 +157,5 @@ const apiClient = new ApiClient({
   timeout: 15000,
 })
 
+export { apiClient }
 export default apiClient
