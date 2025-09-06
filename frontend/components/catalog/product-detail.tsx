@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { productsApi, formatPrice } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
+import { ProductCard } from "@/components/ui/product-card"
 import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react"
 
 interface ProductDetailProps {
@@ -17,6 +18,7 @@ interface ProductDetailProps {
 
 export function ProductDetail({ productSlug }: ProductDetailProps) {
   const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -26,6 +28,19 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
       try {
         const productData = await productsApi.getProduct(productSlug)
         setProduct(productData)
+        
+        // Fetch related products from the same category
+        if (productData.category) {
+          try {
+            const relatedData = await productsApi.getProductsByCategory(productData.category.slug, { limit: 4 })
+            // Filter out the current product from related products
+            const filteredRelated = relatedData.products.filter(p => p.id !== productData.id)
+            setRelatedProducts(filteredRelated.slice(0, 3)) // Show max 3 related products
+          } catch (error) {
+            console.error("Failed to fetch related products:", error)
+            setRelatedProducts([])
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch product:", error)
       } finally {
@@ -80,7 +95,7 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
         <span>/</span>
         {product.category && (
           <>
-            <Link href={`/c/${product.category.slug}`} className="hover:text-foreground">
+            <Link href={`/categories/${product.category.slug}`} className="hover:text-foreground">
               {product.category.name}
             </Link>
             <span>/</span>
@@ -369,6 +384,34 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-12">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Related Products</h2>
+            <p className="text-muted-foreground">You might also be interested in these products from the same category</p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedProducts.map((relatedProduct) => (
+              <ProductCard 
+                key={relatedProduct.id} 
+                product={relatedProduct}
+                showCategory={false}
+                onAddToCart={(productId) => {
+                  // Handle add to cart logic here
+                  console.log('Add to cart:', productId)
+                }}
+                onAddToWishlist={(productId) => {
+                  // Handle wishlist logic here
+                  console.log('Add to wishlist:', productId)
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

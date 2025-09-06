@@ -271,11 +271,11 @@ export function CategoryGrid() {
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
                     <CardContent className="p-4 sm:p-6 text-center relative z-10">
                       {/* Popular Badge */}
-                      {category.popular && (
+                      {/* {category.popular && (
                         <div className="absolute -top-2 sm:-top-3 -right-2 sm:-right-3 bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-bold shadow-lg">
                           <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         </div>
-                      )}
+                      )} */}
                       
                       {/* Icon */}
                       <div className="mb-3 sm:mb-4">

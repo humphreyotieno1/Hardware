@@ -8,10 +8,12 @@ import type { User, LoginRequest, RegisterRequest } from "@/lib/api/types"
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (credentials: LoginRequest) => Promise<void>
+  login: (credentials: LoginRequest) => Promise<{ user: User; token: string; refresh_token: string }>
   register: (userData: RegisterRequest) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  isAdmin: () => boolean
+  isCustomer: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Hello ${authResponse.user.full_name}, you're successfully signed in.`,
         variant: "success",
       })
+      return authResponse
     } catch (error) {
       toast({
         title: "Login failed",
@@ -115,6 +118,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const isAdmin = () => {
+    return user?.role === 'admin'
+  }
+
+  const isCustomer = () => {
+    return user?.role === 'customer'
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -124,6 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshUser,
+        isAdmin,
+        isCustomer,
       }}
     >
       {children}

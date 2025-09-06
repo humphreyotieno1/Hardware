@@ -29,12 +29,24 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      await login({ email, password })
-      // Get redirect URL from query params or default to home
-      const urlParams = new URLSearchParams(window.location.search)
-      const redirectTo = urlParams.get('redirect') || '/'
-      router.push(redirectTo)
+      const authResponse = await login({ email, password })
+      
+      // Small delay to ensure auth state is updated
+      setTimeout(() => {
+        // Role-based redirection
+        if (authResponse.user.role === 'admin') {
+          console.log('Admin login detected, redirecting to admin dashboard')
+          router.push('/admin')
+        } else {
+          // Get redirect URL from query params or default to home for customers
+          const urlParams = new URLSearchParams(window.location.search)
+          const redirectTo = urlParams.get('redirect') || '/'
+          console.log('Customer login detected, redirecting to:', redirectTo)
+          router.push(redirectTo)
+        }
+      }, 100)
     } catch (err) {
+      console.error('Login error:', err)
       setError(err instanceof Error ? err.message : "Login failed")
     } finally {
       setIsLoading(false)

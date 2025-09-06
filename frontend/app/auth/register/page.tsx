@@ -13,7 +13,7 @@ export default function RegisterPage() {
               <span className="text-sm font-medium">Back to Home</span>
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Hardware Store</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Grahad Ventures Limited</h1>
           <p className="text-muted-foreground">Your trusted partner for construction and hardware supplies</p>
         </div>
         <RegisterForm />
