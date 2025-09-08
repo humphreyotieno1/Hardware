@@ -353,31 +353,15 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
               {products.map((product) => (
                 viewMode === "grid" ? (
                   <ProductCard 
-                    key={product.id} 
+                    key={product.ID} 
                     product={product}
                     showCategory={false}
-                    onAddToCart={(productId) => {
-                      // Handle add to cart logic here
-                      console.log('Add to cart:', productId)
-                    }}
-                    onAddToWishlist={(productId) => {
-                      // Handle wishlist logic here
-                      console.log('Add to wishlist:', productId)
-                    }}
                   />
                 ) : (
                   <ProductListCard 
-                    key={product.id} 
+                    key={product.ID} 
                     product={product}
                     showCategory={false}
-                    onAddToCart={(productId) => {
-                      // Handle add to cart logic here
-                      console.log('Add to cart:', productId)
-                    }}
-                    onAddToWishlist={(productId) => {
-                      // Handle wishlist logic here
-                      console.log('Add to wishlist:', productId)
-                    }}
                   />
                 )
               ))}

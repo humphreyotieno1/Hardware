@@ -22,8 +22,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-  const total = cart?.items?.reduce((sum, item) => sum + item.quantity * item.unit_price, 0) || 0
+  const itemCount = cart?.cart_items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const total = cart?.cart_items?.reduce((sum, item) => sum + item.quantity * item.unit_price, 0) || 0
 
   const refreshCart = async () => {
     try {
@@ -47,7 +47,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = async (productId: string, quantity = 1) => {
     try {
-      await cartApi.addItem(productId, quantity)
+      await cartApi.addItem({ product_id: productId, quantity })
       await refreshCart()
     } catch (error) {
       console.error("Failed to add item to cart:", error)
@@ -57,7 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateItem = async (itemId: string, quantity: number) => {
     try {
-      await cartApi.updateItem(itemId, quantity)
+      await cartApi.updateItem(itemId, { quantity })
       await refreshCart()
     } catch (error) {
       console.error("Failed to update cart item:", error)

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { cartApi } from "@/lib/api"
+import { useCart } from "@/lib/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
 import type { CartItem as CartItemType } from "@/lib/api/types"
@@ -18,6 +18,7 @@ interface CartItemProps {
 
 export function CartItem({ item, isUpdating, setIsUpdating, onCartUpdate }: CartItemProps) {
   const { toast } = useToast()
+  const { updateItem, removeItem } = useCart()
   const [quantity, setQuantity] = useState(item.quantity)
   const [isRemoving, setIsRemoving] = useState(false)
 
@@ -26,7 +27,7 @@ export function CartItem({ item, isUpdating, setIsUpdating, onCartUpdate }: Cart
 
     setIsUpdating(true)
     try {
-      await cartApi.updateItem(item.ID, { quantity: newQuantity })
+      await updateItem(item.ID, newQuantity)
       setQuantity(newQuantity)
       if (onCartUpdate) onCartUpdate()
     } catch (error) {
@@ -44,7 +45,7 @@ export function CartItem({ item, isUpdating, setIsUpdating, onCartUpdate }: Cart
   const handleRemove = async () => {
     setIsRemoving(true)
     try {
-      await cartApi.removeItem(item.ID)
+      await removeItem(item.ID)
       if (onCartUpdate) onCartUpdate()
       toast({
         title: "Removed from cart",

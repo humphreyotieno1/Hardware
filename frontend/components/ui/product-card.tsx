@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/api"
 import { cartApi, wishlistApi } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
-import { ShoppingCart, Heart, Star, Loader2 } from "lucide-react"
+import { ShoppingCart, Heart, Star, Loader2, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/lib/hooks/use-auth"
+import { useCart } from "@/lib/hooks/use-cart"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
+
 
 interface ProductCardProps {
   product: Product
@@ -27,26 +31,50 @@ export function ProductCard({
   className = ""
 }: ProductCardProps) {
   const { toast } = useToast()
+  const { user } = useAuth()
+  const { addItem: addToCart } = useCart()
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, wishlistItems } = useWishlist()
   const [loading, setLoading] = useState({
     cart: false,
     wishlist: false
   })
+  const [isInWishlist, setIsInWishlist] = useState(false)
+  const [wishlistItemId, setWishlistItemId] = useState<string | null>(null)
+
+  // Check if product is in wishlist using hook data
+  useEffect(() => {
+    const wishlistItem = wishlistItems.find(item => item.product_id === product.ID)
+    if (wishlistItem) {
+      setIsInWishlist(true)
+      setWishlistItemId(wishlistItem.ID)
+    } else {
+      setIsInWishlist(false)
+      setWishlistItemId(null)
+    }
+  }, [wishlistItems, product.ID])
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
     if (onAddToCart) {
-      onAddToCart(product.id)
+      onAddToCart(product.ID)
+      return
+    }
+
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to add items to your cart.",
+        variant: "destructive"
+      })
       return
     }
 
     try {
       setLoading(prev => ({ ...prev, cart: true }))
-      await cartApi.addItem({
-        product_id: product.id,
-        quantity: 1
-      })
+      await addToCart(product.ID, 1)
       
       toast({
         title: "Added to cart",
@@ -64,30 +92,48 @@ export function ProductCard({
     }
   }
 
-  const handleAddToWishlist = async (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
     if (onAddToWishlist) {
-      onAddToWishlist(product.id)
+      onAddToWishlist(product.ID)
+      return
+    }
+
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to manage your wishlist.",
+        variant: "destructive"
+      })
       return
     }
 
     try {
       setLoading(prev => ({ ...prev, wishlist: true }))
-      await wishlistApi.addItem({
-        product_id: product.id
-      })
       
-      toast({
-        title: "Added to wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      })
+      if (isInWishlist && wishlistItemId) {
+        // Remove from wishlist
+        await removeFromWishlist(wishlistItemId)
+        toast({
+          title: "Removed from wishlist",
+          description: `${product.name} has been removed from your wishlist.`,
+        })
+      } else {
+        // Add to wishlist
+        await addToWishlist(product.ID)
+        toast({
+          title: "Added to wishlist",
+          description: `${product.name} has been added to your wishlist.`,
+        })
+      }
     } catch (error) {
-      console.error('Error adding to wishlist:', error)
+      console.error('Error toggling wishlist:', error)
       toast({
         title: "Error",
-        description: "Failed to add item to wishlist. Please try again.",
+        description: "Failed to update wishlist. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -118,12 +164,16 @@ export function ProductCard({
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-1.5 right-1.5 h-7 w-7 p-0 bg-background/80 hover:bg-background"
-            onClick={handleAddToWishlist}
+            className={`absolute top-1.5 right-1.5 h-7 w-7 p-0 bg-background/80 hover:bg-background ${
+              isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
+            }`}
+            onClick={handleWishlistToggle}
             disabled={loading.wishlist}
           >
             {loading.wishlist ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : isInWishlist ? (
+              <Heart className="h-3.5 w-3.5 fill-current" />
             ) : (
               <Heart className="h-3.5 w-3.5" />
             )}

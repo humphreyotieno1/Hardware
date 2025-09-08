@@ -8,7 +8,9 @@ import {
   Heart, ArrowLeft, ShoppingCart, Trash2, Package, 
   Loader2, AlertCircle 
 } from "lucide-react"
-import { wishlistApi, cartApi } from "@/lib/api"
+import { cartApi } from "@/lib/api"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
+import { useCart } from "@/lib/hooks/use-cart"
 import type { WishlistItem } from "@/lib/api/types"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -16,39 +18,18 @@ import { formatPrice } from "@/lib/api"
 
 export function WishlistPage() {
   const { toast } = useToast()
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
+  const { wishlistItems, removeItem: removeFromWishlistHook, loading: wishlistLoading } = useWishlist()
+  const { addItem: addToCart } = useCart()
   const [loading, setLoading] = useState({
-    wishlist: true,
     removing: false,
     adding: false
   })
 
-  useEffect(() => {
-    loadWishlist()
-  }, [])
-
-  const loadWishlist = async () => {
-    try {
-      setLoading(prev => ({ ...prev, wishlist: true }))
-      const wishlistData = await wishlistApi.getWishlist()
-      setWishlistItems(wishlistData)
-    } catch (error) {
-      console.error('Error loading wishlist:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load wishlist. Please try again.",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(prev => ({ ...prev, wishlist: false }))
-    }
-  }
 
   const removeFromWishlist = async (itemId: string) => {
     try {
       setLoading(prev => ({ ...prev, removing: true }))
-      await wishlistApi.removeItem(itemId)
-      await loadWishlist() // Reload wishlist to get updated data
+      await removeFromWishlistHook(itemId)
       
       toast({
         title: "Removed from wishlist",
@@ -66,13 +47,10 @@ export function WishlistPage() {
     }
   }
 
-  const addToCart = async (productId: string, productName: string) => {
+  const addToCartFromWishlist = async (productId: string, productName: string) => {
     try {
       setLoading(prev => ({ ...prev, adding: true }))
-      await cartApi.addItem({
-        product_id: productId,
-        quantity: 1
-      })
+      await addToCart(productId, 1)
       
       toast({
         title: "Added to cart",
@@ -90,7 +68,7 @@ export function WishlistPage() {
     }
   }
 
-  if (loading.wishlist) {
+  if (wishlistLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-12">
@@ -235,7 +213,7 @@ export function WishlistPage() {
                       size="sm"
                       className="flex-1"
                       disabled={(item.product?.stock_quantity || 0) <= 0 || loading.adding}
-                      onClick={() => addToCart(item.product_id, item.product?.name || 'Product')}
+                      onClick={() => addToCartFromWishlist(item.product_id, item.product?.name || 'Product')}
                     >
                       {loading.adding ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />

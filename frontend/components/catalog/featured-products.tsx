@@ -132,16 +132,8 @@ export function FeaturedProducts() {
           ) : (
             products.map((product) => (
               <ProductCard 
-                key={product.id} 
+                key={product.ID} 
                 product={product}
-                onAddToCart={(productId) => {
-                  // Handle add to cart logic here
-                  console.log('Add to cart:', productId)
-                }}
-                onAddToWishlist={(productId) => {
-                  // Handle wishlist logic here
-                  console.log('Add to wishlist:', productId)
-                }}
               />
             ))
           )}
