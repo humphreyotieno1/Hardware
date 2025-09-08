@@ -16,18 +16,28 @@ export function AdminGuard({ children }: AdminGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
+    // console.log('AdminGuard: useEffect triggered')
+    // console.log('AdminGuard: loading =', loading)
+    // console.log('AdminGuard: user =', user)
+    // console.log('AdminGuard: user?.role =', user?.role)
+    // console.log('AdminGuard: isAdmin() =', isAdmin())
+    
     if (!loading) {
       if (!user) {
         // User not logged in, redirect to login
+        // console.log('AdminGuard: No user, redirecting to login')
         router.push('/auth/login?redirect=/admin')
         return
       }
       
       if (!isAdmin()) {
         // User is not admin, redirect to home with error message
+        // console.log('AdminGuard: User is not admin, redirecting to home')
         router.push('/?error=access_denied')
         return
       }
+      
+      // console.log('AdminGuard: User is admin, allowing access')
     }
   }, [user, loading, isAdmin, router])
 

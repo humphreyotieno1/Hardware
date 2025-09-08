@@ -9,13 +9,20 @@ export function middleware(request: NextRequest) {
     // Get the token from cookies
     const token = request.cookies.get('auth-token')?.value
     
+    console.log('Middleware: Checking admin route:', pathname)
+    console.log('Middleware: Auth token found:', !!token)
+    console.log('Middleware: Token value:', token ? `${token.substring(0, 20)}...` : 'none')
+    console.log('Middleware: All cookies:', request.cookies.getAll().map(c => c.name))
+    
     if (!token) {
       // No token, redirect to login with redirect parameter
+      console.log('Middleware: No token found, redirecting to login')
       const loginUrl = new URL('/auth/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
     
+    console.log('Middleware: Token found, allowing access')
     // For now, we'll let the client-side handle role checking
     // In a production app, you'd verify the token and role server-side
     return NextResponse.next()

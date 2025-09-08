@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,6 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
   const { login } = useAuth()
   const router = useRouter()
 
@@ -30,21 +29,26 @@ export function LoginForm() {
 
     try {
       const authResponse = await login({ email, password })
+      console.log('Login successful, auth response:', authResponse)
+      console.log('User role:', authResponse.user.role)
+      console.log('Token received:', authResponse.token ? `${authResponse.token.substring(0, 20)}...` : 'none')
       
-      // Small delay to ensure auth state is updated
-      setTimeout(() => {
-        // Role-based redirection
-        if (authResponse.user.role === 'admin') {
-          console.log('Admin login detected, redirecting to admin dashboard')
-          router.push('/admin')
-        } else {
-          // Get redirect URL from query params or default to home for customers
-          const urlParams = new URLSearchParams(window.location.search)
-          const redirectTo = urlParams.get('redirect') || '/'
-          console.log('Customer login detected, redirecting to:', redirectTo)
-          router.push(redirectTo)
-        }
-      }, 100)
+      // Check if token is set in localStorage and cookies
+      // console.log('localStorage token:', localStorage.getItem('auth_token') ? `${localStorage.getItem('auth_token')!.substring(0, 20)}...` : 'none')
+      // console.log('Document cookies:', document.cookie)
+      
+      // Simple redirect based on role
+      if (authResponse.user.role === 'admin') {
+        // console.log('Admin login detected, redirecting to admin dashboard')
+        // Use window.location.href for a hard redirect
+        window.location.href = '/admin'
+      } else {
+        // Get redirect URL from query params or default to home for customers
+        const urlParams = new URLSearchParams(window.location.search)
+        const redirectTo = urlParams.get('redirect') || '/'
+        // console.log('Customer login detected, redirecting to:', redirectTo)
+        window.location.href = redirectTo
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : "Login failed")

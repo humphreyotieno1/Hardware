@@ -25,7 +25,7 @@ export class ApiClient {
       this.token = localStorage.getItem("auth_token") || 
         document.cookie
           .split('; ')
-          .find(row => row.startsWith('auth_token='))
+          .find(row => row.startsWith('auth-token='))
           ?.split('=')[1] || null
     }
   }
@@ -36,11 +36,12 @@ export class ApiClient {
       if (token) {
         localStorage.setItem("auth_token", token)
         // Also set cookie for middleware compatibility
-        document.cookie = `auth_token=${token}; path=/; secure; samesite=strict; max-age=${7 * 24 * 60 * 60}` // 7 days
+        const isSecure = window.location.protocol === 'https:'
+        document.cookie = `auth-token=${token}; path=/; ${isSecure ? 'secure; ' : ''}samesite=strict; max-age=${7 * 24 * 60 * 60}` // 7 days
       } else {
         localStorage.removeItem("auth_token")
         // Clear cookie
-        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       }
     }
   }
