@@ -19,8 +19,8 @@ export function ServicesManagement() {
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [typeFilter, setTypeFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isQuoteDialogOpen, setIsQuoteDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null)
@@ -33,8 +33,8 @@ export function ServicesManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getServiceRequests({
-        status: statusFilter || undefined,
-        type: typeFilter || undefined,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        type: typeFilter === "all" ? undefined : typeFilter,
       })
       setServiceRequests(data.requests)
     } catch (error) {
@@ -225,7 +225,7 @@ export function ServicesManagement() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 {statusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -238,7 +238,7 @@ export function ServicesManagement() {
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="installation">Installation</SelectItem>
                 <SelectItem value="repair">Repair</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>
