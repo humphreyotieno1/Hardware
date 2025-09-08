@@ -1,9 +1,9 @@
-import apiClient from "./client"
+import { getApiClient } from "./client"
 import type { Product, Category, ProductSearchParams } from "./types"
 
 export const productsApi = {
   async getCategories(): Promise<Category[]> {
-    const response = await apiClient.get<Category[]>("/catalog/categories")
+    const response = await getApiClient().get<Category[]>("/catalog/categories")
     return response.data!
   },
 
@@ -13,7 +13,7 @@ export const productsApi = {
     page: number
     limit: number
   }> {
-    const response = await apiClient.get("/catalog/products", params)
+    const response = await getApiClient().get("/catalog/products", params)
     return response.data! as {
       products: Product[]
       total: number
@@ -23,7 +23,7 @@ export const productsApi = {
   },
 
   async getProduct(slug: string): Promise<Product> {
-    const response = await apiClient.get<Product>(`/catalog/products/${slug}`)
+    const response = await getApiClient().get<Product>(`/catalog/products/${slug}`)
     return response.data! as Product
   },
 
@@ -36,7 +36,7 @@ export const productsApi = {
     page: number
     limit: number
   }> {
-    const response = await apiClient.get("/catalog/products", { ...params, category: categorySlug })
+    const response = await getApiClient().get("/catalog/products", { ...params, category: categorySlug })
     return response.data! as {
       products: Product[]
       total: number
@@ -46,7 +46,7 @@ export const productsApi = {
   },
 
   async getFeaturedProducts(limit = 8): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>("/products/featured", { limit })
+    const response = await getApiClient().get<Product[]>("/products/featured", { limit })
     return response.data! as Product[]
   },
 

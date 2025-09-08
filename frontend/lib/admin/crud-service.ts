@@ -142,7 +142,7 @@ export class CrudService<T> {
   private endpoint: string
 
   constructor(endpoint: string) {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api'
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hardware-backend-ocgv.onrender.com/api'
     this.endpoint = endpoint
   }
 
