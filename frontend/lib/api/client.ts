@@ -152,11 +152,18 @@ export class ApiClient {
   }
 }
 
-// Create default client instance
-const apiClient = new ApiClient({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://hardware-backend-ocgv.onrender.com/api" || "http://localhost:8080/api",
-  timeout: 15000,
-})
+// Lazy initialization to avoid SSR issues
+let apiClient: ApiClient | null = null
 
-export { apiClient }
-export default apiClient
+const getApiClient = () => {
+  if (!apiClient) {
+    apiClient = new ApiClient({
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://hardware-backend-ocgv.onrender.com/api",
+      timeout: 15000,
+    })
+  }
+  return apiClient
+}
+
+export { getApiClient }
+export default getApiClient

@@ -10,7 +10,11 @@ import { Separator } from "@/components/ui/separator"
 import { productsApi, formatPrice } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
 import { ProductCard } from "@/components/ui/product-card"
-import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react"
+import { useCart } from "@/lib/hooks/use-cart"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/hooks/use-auth"
+import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw, Loader2 } from "lucide-react"
 
 interface ProductDetailProps {
   productSlug: string
@@ -22,6 +26,102 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false)
+  const [isInWishlist, setIsInWishlist] = useState(false)
+  const [wishlistItemId, setWishlistItemId] = useState<string | null>(null)
+
+  const { toast } = useToast()
+  const { user } = useAuth()
+  const { addItem: addToCart } = useCart()
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, wishlistItems } = useWishlist()
+
+  // Check if product is in wishlist
+  useEffect(() => {
+    if (product) {
+      const wishlistItem = wishlistItems.find(item => item.product_id === product.ID)
+      if (wishlistItem) {
+        setIsInWishlist(true)
+        setWishlistItemId(wishlistItem.ID)
+      } else {
+        setIsInWishlist(false)
+        setWishlistItemId(null)
+      }
+    }
+  }, [wishlistItems, product])
+
+  const handleAddToCart = async () => {
+    if (!product) return
+
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to add items to your cart.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setIsAddingToCart(true)
+      await addToCart(product.ID, quantity)
+      toast({
+        title: "Added to cart",
+        description: `${product.name} (${quantity}) has been added to your cart.`,
+      })
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsAddingToCart(false)
+    }
+  }
+
+  const handleWishlistToggle = async () => {
+    if (!product) return
+
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to manage your wishlist.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setIsAddingToWishlist(true)
+      
+      if (isInWishlist && wishlistItemId) {
+        // Remove from wishlist
+        await removeFromWishlist(wishlistItemId)
+        toast({
+          title: "Removed from wishlist",
+          description: `${product.name} has been removed from your wishlist.`,
+        })
+      } else {
+        // Add to wishlist
+        await addToWishlist(product.ID)
+        toast({
+          title: "Added to wishlist",
+          description: `${product.name} has been added to your wishlist.`,
+        })
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsAddingToWishlist(false)
+    }
+  }
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -196,13 +296,31 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="flex-1" size="lg" disabled={product.stock_quantity === 0}>
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                {product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
+              <Button 
+                className="flex-1" 
+                size="lg" 
+                disabled={product.stock_quantity === 0 || isAddingToCart}
+                onClick={handleAddToCart}
+              >
+                {isAddingToCart ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                )}
+                {product.stock_quantity === 0 ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
               </Button>
-              <Button variant="outline" size="lg">
-                <Heart className="mr-2 h-5 w-5" />
-                Add to Wishlist
+              <Button 
+                variant="outline" 
+                size="lg"
+                disabled={isAddingToWishlist}
+                onClick={handleWishlistToggle}
+              >
+                {isAddingToWishlist ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Heart className={`mr-2 h-5 w-5 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
+                )}
+                {isAddingToWishlist ? "Updating..." : isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
               </Button>
             </div>
           </div>
