@@ -30,7 +30,7 @@ export function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<string>("")
   const [isProcessing, setIsProcessing] = useState(false)
 
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!cart || !cart.cart_items || cart.cart_items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-16">
@@ -142,8 +142,8 @@ export function CheckoutPage() {
             <CardContent className="space-y-4">
               {/* Items Preview */}
               <div className="space-y-3 max-h-48 overflow-y-auto">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-3">
+                {cart.cart_items.map((item) => (
+                  <div key={item.ID} className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                       {item.product?.images_json && item.product.images_json.length > 0 ? (
                         <img

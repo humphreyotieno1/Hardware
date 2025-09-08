@@ -1,46 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { cartApi } from "@/lib/api"
-import type { Cart } from "@/lib/api/types"
+import { useCart } from "@/lib/hooks/use-cart"
 import { formatPrice } from "@/lib/api"
 import { CartItem } from "@/components/cart/cart-item"
-import { ShoppingBag, ArrowLeft, Truck, Shield, Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { ShoppingBag, ArrowLeft, Truck, Shield } from "lucide-react"
 
 export function CartPage() {
-  const { toast } = useToast()
-  const [cart, setCart] = useState<Cart | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { cart, loading, itemCount, total, refreshCart } = useCart()
   const [isUpdating, setIsUpdating] = useState(false)
-
-  useEffect(() => {
-    loadCart()
-  }, [])
-
-  const loadCart = async () => {
-    try {
-      setLoading(true)
-      const cartData = await cartApi.getCart()
-      setCart(cartData)
-    } catch (error) {
-      console.error('Error loading cart:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load cart. Please try again.",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const itemCount = cart?.cart_items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-  const total = cart?.cart_items?.reduce((sum, item) => sum + item.quantity * item.unit_price, 0) || 0
 
   if (loading) {
     return (
@@ -134,7 +106,7 @@ export function CartPage() {
               <div className="divide-y">
                 {cart.cart_items.map((item, index) => (
                   <div key={item.ID} className="p-6">
-                    <CartItem item={item} isUpdating={isUpdating} setIsUpdating={setIsUpdating} onCartUpdate={loadCart} />
+                    <CartItem item={item} isUpdating={isUpdating} setIsUpdating={setIsUpdating} onCartUpdate={refreshCart} />
                   </div>
                 ))}
               </div>
