@@ -47,7 +47,7 @@ export function Header() {
           try {
             const response = await productsApi.getProductsByCategory(cat.slug, { limit: 4 })
             productsMap[cat.slug] = response.products
-            console.log(`Loaded ${response.products.length} products for category: ${cat.slug}`)
+            // console.log(`Loaded ${response.products.length} products for category: ${cat.slug}`)
           } catch (error) {
             console.error(`Failed to fetch products for category ${cat.slug}:`, error)
             // Add empty array so flyout still shows

@@ -51,7 +51,7 @@ export interface Category {
 }
 
 export interface Product {
-  id: string
+  ID: string
   sku: string
   name: string
   slug: string
@@ -73,8 +73,7 @@ export interface ProductSearchParams {
 
 // Cart Types
 export interface CartItem {
-  id: string
-  cart_id: string
+  ID: string
   product_id: string
   quantity: number
   unit_price: number
@@ -82,60 +81,162 @@ export interface CartItem {
 }
 
 export interface Cart {
-  id: string
-  user_id?: string
-  session_id?: string
-  items: CartItem[]
-  total: number
+  ID: string
+  user_id: string
+  cart_items: CartItem[]
+}
+
+export interface AddToCartRequest {
+  product_id: string
+  quantity: number
+}
+
+export interface UpdateCartItemRequest {
+  quantity: number
+}
+
+// Wishlist Types
+export interface WishlistItem {
+  ID: string
+  user_id: string
+  product_id: string
+  product?: Product
+}
+
+export interface AddToWishlistRequest {
+  product_id: string
 }
 
 // Order Types
 export interface Address {
-  id?: string
-  user_id?: string
   label: string
-  line1: string
+  line: string
   city: string
   country: string
-  is_default: boolean
 }
 
 export interface ServiceRequest {
-  type: "transport" | "installation" | "cutting"
-  details: string
-  location?: string
-  preferred_date?: string
+  type: "installation" | "transport" | "cutting"
+  details: Record<string, any>
 }
 
 export interface Order {
-  id: string
-  user_id?: string
+  ID: string
+  user_id: string
   total: number
-  status: "pending" | "confirmed" | "shipped" | "delivered"
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
   address_json: Address
-  service_request?: ServiceRequest
   placed_at: string
-  items: OrderItem[]
+  order_items: OrderItem[]
 }
 
 export interface OrderItem {
-  id: string
-  order_id: string
   product_id: string
   quantity: number
   unit_price: number
   product?: Product
 }
 
+export interface CreateOrderRequest {
+  address: Address
+  service_request?: ServiceRequest
+}
+
+export interface CreateOrderResponse {
+  message: string
+  order_id: string
+  total: number
+}
+
+// Checkout Types
+export interface ShippingOption {
+  id: string
+  name: string
+  price: number
+  estimated_days: string
+}
+
+export interface PlaceOrderRequest {
+  address: Address
+  service_request?: ServiceRequest
+  payment_method: string
+}
+
+export interface PlaceOrderResponse {
+  message: string
+  order_id: string
+  payment_id: string
+  total: number
+}
+
+// Service Request Types
+export interface ServiceRequestDetails {
+  type: "installation" | "transport" | "cutting"
+  details: Record<string, any>
+  location: string
+  requested_date: string
+  instructions?: string
+}
+
+export interface ServiceRequestResponse {
+  ID: string
+  user_id: string
+  type: string
+  details: Record<string, any>
+  location: string
+  requested_date: string
+  instructions?: string
+  status: "requested" | "quoted" | "accepted" | "completed"
+}
+
+export interface AcceptQuoteRequest {
+  quote_id: string
+}
+
 // Payment Types
 export interface Payment {
-  id: string
+  ID: string
   order_id: string
-  provider: "M-Pesa" | "Card" | "Bank" | "Cash"
+  user_id: string
+  provider: "paystack" | "mpesa" | "card"
   reference: string
   amount: number
   status: "pending" | "completed" | "failed"
-  paid_at?: string
+}
+
+export interface InitiatePaymentRequest {
+  order_id: string
+  payment_method: string
+  amount: number
+}
+
+export interface InitiatePaymentResponse {
+  message: string
+  payment_id: string
+  amount: number
+  paystack?: {
+    authorization_url: string
+    access_code: string
+    reference: string
+  }
+}
+
+// Notification Types
+export interface Notification {
+  ID: string
+  user_id: string
+  type: string
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[]
+  limit: number
+  offset: number
+  count: number
 }
 
 // Admin Types

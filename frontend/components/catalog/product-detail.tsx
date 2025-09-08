@@ -396,17 +396,9 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedProducts.map((relatedProduct) => (
               <ProductCard 
-                key={relatedProduct.id} 
+                key={relatedProduct.ID} 
                 product={relatedProduct}
                 showCategory={false}
-                onAddToCart={(productId) => {
-                  // Handle add to cart logic here
-                  console.log('Add to cart:', productId)
-                }}
-                onAddToWishlist={(productId) => {
-                  // Handle wishlist logic here
-                  console.log('Add to wishlist:', productId)
-                }}
               />
             ))}
           </div>

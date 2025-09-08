@@ -1,12 +1,5 @@
 import apiClient from "./client"
-import type { Product } from "./types"
-
-export interface WishlistItem {
-  id: string
-  user_id: string
-  product_id: string
-  product?: Product
-}
+import type { WishlistItem, AddToWishlistRequest } from "./types"
 
 export const wishlistApi = {
   async getWishlist(): Promise<WishlistItem[]> {
@@ -14,23 +7,13 @@ export const wishlistApi = {
     return response.data!
   },
 
-  async addItem(productId: string): Promise<WishlistItem> {
-    const response = await apiClient.post<WishlistItem>("/wishlist/items", {
-      product_id: productId,
-    })
+  async addItem(item: AddToWishlistRequest): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>("/wishlist/items", item)
     return response.data!
   },
 
-  async removeItem(itemId: string): Promise<void> {
-    await apiClient.delete(`/wishlist/items/${itemId}`)
-  },
-
-  async isInWishlist(productId: string): Promise<boolean> {
-    try {
-      const wishlist = await this.getWishlist()
-      return wishlist.some((item) => item.product_id === productId)
-    } catch {
-      return false
-    }
+  async removeItem(itemId: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/wishlist/items/${itemId}`)
+    return response.data!
   },
 }

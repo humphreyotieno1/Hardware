@@ -1,148 +1,86 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+import { wishlistApi } from "@/lib/api"
+import type { WishlistItem } from "@/lib/api/types"
 
-export interface WishlistItem {
-  id: string
-  product: {
-    id: string
-    name: string
-    price: number
-    comparePrice: number
-    image: string
-    category: string
-    brand: string
-    rating: number
-    reviewCount: number
-    inStock: boolean
-    stockCount: number
-  }
-  addedAt: string
-  notes?: string
+interface WishlistContextType {
+  wishlistItems: WishlistItem[]
+  loading: boolean
+  itemCount: number
+  addItem: (productId: string) => Promise<void>
+  removeItem: (itemId: string) => Promise<void>
+  refreshWishlist: () => Promise<void>
 }
 
-export function useWishlist() {
+const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
+
+export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Load wishlist from localStorage on mount
-  useEffect(() => {
-    const loadWishlist = () => {
-      try {
-        const stored = localStorage.getItem("hardware-store-wishlist")
-        if (stored) {
-          setWishlistItems(JSON.parse(stored))
-        }
-      } catch (error) {
-        console.error("Failed to load wishlist from localStorage:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadWishlist()
-  }, [])
-
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("hardware-store-wishlist", JSON.stringify(wishlistItems))
-    }
-  }, [wishlistItems, loading])
-
-  // Add item to wishlist
-  const addToWishlist = useCallback((product: WishlistItem["product"], notes?: string) => {
-    setWishlistItems(prev => {
-      // Check if product already exists in wishlist
-      const existingIndex = prev.findIndex(item => item.product.id === product.id)
-      
-      if (existingIndex >= 0) {
-        // Update existing item
-        const updated = [...prev]
-        updated[existingIndex] = {
-          ...updated[existingIndex],
-          notes: notes || updated[existingIndex].notes,
-          addedAt: new Date().toISOString()
-        }
-        return updated
-      } else {
-        // Add new item
-        const newItem: WishlistItem = {
-          id: `wish-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          product,
-          addedAt: new Date().toISOString(),
-          notes
-        }
-        return [...prev, newItem]
-      }
-    })
-  }, [])
-
-  // Remove item from wishlist
-  const removeFromWishlist = useCallback((productId: string) => {
-    setWishlistItems(prev => prev.filter(item => item.product.id !== productId))
-  }, [])
-
-  // Remove wishlist item by wishlist item ID
-  const removeWishlistItem = useCallback((wishlistItemId: string) => {
-    setWishlistItems(prev => prev.filter(item => item.id !== wishlistItemId))
-  }, [])
-
-  // Update wishlist item notes
-  const updateWishlistItemNotes = useCallback((wishlistItemId: string, notes: string) => {
-    setWishlistItems(prev => 
-      prev.map(item => 
-        item.id === wishlistItemId 
-          ? { ...item, notes }
-          : item
-      )
-    )
-  }, [])
-
-  // Check if product is in wishlist
-  const isInWishlist = useCallback((productId: string) => {
-    return wishlistItems.some(item => item.product.id === productId)
-  }, [wishlistItems])
-
-  // Get wishlist item count
   const itemCount = wishlistItems.length
 
-  // Clear entire wishlist
-  const clearWishlist = useCallback(() => {
-    setWishlistItems([])
-  }, [])
-
-  // Move item to cart (this would integrate with cart hook)
-  const moveToCart = useCallback((wishlistItemId: string) => {
-    // TODO: Integrate with cart hook to actually add to cart
-    console.log("Moving wishlist item to cart:", wishlistItemId)
-    
-    // For now, just remove from wishlist
-    removeWishlistItem(wishlistItemId)
-  }, [removeWishlistItem])
-
-  // Bulk operations
-  const removeMultipleItems = useCallback((wishlistItemIds: string[]) => {
-    setWishlistItems(prev => prev.filter(item => !wishlistItemIds.includes(item.id)))
-  }, [])
-
-  const moveMultipleToCart = useCallback((wishlistItemIds: string[]) => {
-    // TODO: Integrate with cart hook
-    wishlistItemIds.forEach(moveToCart)
-  }, [moveToCart])
-
-  return {
-    wishlistItems,
-    loading,
-    itemCount,
-    addToWishlist,
-    removeFromWishlist,
-    removeWishlistItem,
-    updateWishlistItemNotes,
-    isInWishlist,
-    clearWishlist,
-    moveToCart,
-    removeMultipleItems,
-    moveMultipleToCart
+  const refreshWishlist = async () => {
+    try {
+      const wishlistData = await wishlistApi.getWishlist()
+      setWishlistItems(wishlistData)
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error)
+      setWishlistItems([])
+    }
   }
+
+  useEffect(() => {
+    const initWishlist = async () => {
+      setLoading(true)
+      await refreshWishlist()
+      setLoading(false)
+    }
+
+    initWishlist()
+  }, [])
+
+  const addItem = async (productId: string) => {
+    try {
+      await wishlistApi.addItem({ product_id: productId })
+      await refreshWishlist()
+    } catch (error) {
+      console.error("Failed to add item to wishlist:", error)
+      throw error
+    }
+  }
+
+  const removeItem = async (itemId: string) => {
+    try {
+      await wishlistApi.removeItem(itemId)
+      await refreshWishlist()
+    } catch (error) {
+      console.error("Failed to remove wishlist item:", error)
+      throw error
+    }
+  }
+
+  return (
+    <WishlistContext.Provider
+      value={{
+        wishlistItems,
+        loading,
+        itemCount,
+        addItem,
+        removeItem,
+        refreshWishlist,
+      }}
+    >
+      {children}
+    </WishlistContext.Provider>
+  )
+}
+
+export function useWishlist() {
+  const context = useContext(WishlistContext)
+  if (context === undefined) {
+    throw new Error("useWishlist must be used within a WishlistProvider")
+  }
+  return context
 }

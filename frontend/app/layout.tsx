@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/lib/hooks/use-auth"
 import { CartProvider } from "@/lib/hooks/use-cart"
+import { WishlistProvider } from "@/lib/hooks/use-wishlist"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthErrorBoundary } from "@/components/auth/auth-error-boundary"
 import { Suspense } from "react"
@@ -32,7 +33,9 @@ export default function RootLayout({
         <Suspense fallback={<div>Loading...</div>}>
           <AuthErrorBoundary>
             <AuthProvider>
-              <CartProvider>{children}</CartProvider>
+              <CartProvider>
+                <WishlistProvider>{children}</WishlistProvider>
+              </CartProvider>
             </AuthProvider>
           </AuthErrorBoundary>
         </Suspense>

@@ -8,84 +8,84 @@ const brands = [
   {
     id: 1,
     name: "DeWalt",
-    logo: "/images/hero/dewalt.png",
+    logo: "/placeholder-logo.png",
     fallback: "DW",
     url: "/brands/dewalt"
   },
   {
     id: 2,
     name: "Makita",
-    logo: "/images/hero/makita.png",
+    logo: "/placeholder-logo.png",
     fallback: "MK",
     url: "/brands/makita"
   },
   {
     id: 3,
     name: "Milwaukee",
-    logo: "/images/hero/milwaukee.png",
+    logo: "/placeholder-logo.png",
     fallback: "MW",
     url: "/brands/milwaukee"
   },
   {
     id: 4,
     name: "Bosch",
-    logo: "/images/hero/bosch.png",
+    logo: "/placeholder-logo.png",
     fallback: "BC",
     url: "/brands/bosch"
   },
   {
     id: 5,
     name: "Stanley",
-    logo: "/images/hero/stanley.png",
+    logo: "/placeholder-logo.png",
     fallback: "ST",
     url: "/brands/stanley"
   },
   {
     id: 6,
     name: "Craftsman",
-    logo: "/images/hero/craftsman.png",
+    logo: "/placeholder-logo.png",
     fallback: "CM",
     url: "/brands/craftsman"
   },
   {
     id: 7,
     name: "Klein Tools",
-    logo: "/images/hero/klein.png",
+    logo: "/placeholder-logo.png",
     fallback: "KL",
     url: "/brands/klein"
   },
   {
     id: 8,
     name: "Southwire",
-    logo: "/images/hero/southwire.png",
+    logo: "/placeholder-logo.png",
     fallback: "SW",
     url: "/brands/southwire"
   },
   {
     id: 9,
     name: "Ridgid",
-    logo: "/images/hero/ridgid.png",
+    logo: "/placeholder-logo.png",
     fallback: "RG",
     url: "/brands/ridgid"
   },
   {
     id: 10,
     name: "Knipex",
-    logo: "/images/hero/knipex.png",
+    logo: "/placeholder-logo.png",
     fallback: "KP",
     url: "/brands/knipex"
   },
   {
     id: 11,
     name: "Wera",
-    logo: "/images/hero/wera.png",
+    logo: "/placeholder-logo.png",
     fallback: "WR",
     url: "/brands/wera"
   },
   {
     id: 12,
     name: "Hilti",
-    logo: "/images/hero/hilti.png",
+    logo: "/placeholder-logo.png",
     fallback: "HT",
     url: "/brands/hilti"
   }

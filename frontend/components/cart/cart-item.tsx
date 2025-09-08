@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/hooks/use-cart"
+import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
 import type { CartItem as CartItemType } from "@/lib/api/types"
 import { Minus, Plus, Trash2, Heart } from "lucide-react"
@@ -12,9 +13,11 @@ interface CartItemProps {
   item: CartItemType
   isUpdating: boolean
   setIsUpdating: (updating: boolean) => void
+  onCartUpdate?: () => void
 }
 
-export function CartItem({ item, isUpdating, setIsUpdating }: CartItemProps) {
+export function CartItem({ item, isUpdating, setIsUpdating, onCartUpdate }: CartItemProps) {
+  const { toast } = useToast()
   const { updateItem, removeItem } = useCart()
   const [quantity, setQuantity] = useState(item.quantity)
   const [isRemoving, setIsRemoving] = useState(false)
@@ -24,10 +27,16 @@ export function CartItem({ item, isUpdating, setIsUpdating }: CartItemProps) {
 
     setIsUpdating(true)
     try {
-      await updateItem(item.id, newQuantity)
+      await updateItem(item.ID, newQuantity)
       setQuantity(newQuantity)
+      if (onCartUpdate) onCartUpdate()
     } catch (error) {
       console.error("Failed to update quantity:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update quantity. Please try again.",
+        variant: "destructive"
+      })
     } finally {
       setIsUpdating(false)
     }
@@ -36,9 +45,20 @@ export function CartItem({ item, isUpdating, setIsUpdating }: CartItemProps) {
   const handleRemove = async () => {
     setIsRemoving(true)
     try {
-      await removeItem(item.id)
+      await removeItem(item.ID)
+      if (onCartUpdate) onCartUpdate()
+      toast({
+        title: "Removed from cart",
+        description: "Item has been removed from your cart.",
+      })
     } catch (error) {
       console.error("Failed to remove item:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove item. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
       setIsRemoving(false)
     }
   }

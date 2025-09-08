@@ -44,8 +44,9 @@ export const authApi = {
     return response.data!
   },
 
-  async updateProfile(profile: UpdateProfileRequest): Promise<void> {
-    await apiClient.put("/profile", profile)
+  async updateProfile(profile: UpdateProfileRequest): Promise<{ message: string }> {
+    const response = await apiClient.put<{ message: string }>("/profile", profile)
+    return response.data!
   },
 
   async refreshToken(): Promise<AuthResponse> {
