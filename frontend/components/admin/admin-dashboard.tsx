@@ -55,6 +55,7 @@ import {
 // Import management components
 import { SystemHealthMonitor } from "./system-health"
 import { CategoriesManagement } from "./categories-management"
+import { ProductsManagement } from "./products-management"
 import { InventoryManagement } from "./inventory-management"
 import { OrdersManagement } from "./orders-management"
 import { ServicesManagement } from "./services-management"

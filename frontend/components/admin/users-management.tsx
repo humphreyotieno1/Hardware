@@ -18,7 +18,7 @@ export function UsersManagement() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("")
+  const [roleFilter, setRoleFilter] = useState("all")
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [roleData, setRoleData] = useState({ role: "" })
@@ -29,7 +29,7 @@ export function UsersManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getUsers({
-        role: roleFilter || undefined,
+        role: roleFilter === "all" ? undefined : roleFilter,
         search: searchTerm || undefined,
       })
       setUsers(data.users)
@@ -182,7 +182,7 @@ export function UsersManagement() {
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
+                <SelectItem value="all">All Roles</SelectItem>
                 <SelectItem value="customer">Customers</SelectItem>
                 <SelectItem value="admin">Admins</SelectItem>
               </SelectContent>
