@@ -1,18 +1,46 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useCart } from "@/lib/hooks/use-cart"
+import { cartApi } from "@/lib/api"
+import type { Cart } from "@/lib/api/types"
 import { formatPrice } from "@/lib/api"
 import { CartItem } from "@/components/cart/cart-item"
-import { ShoppingBag, ArrowLeft, Truck, Shield } from "lucide-react"
+import { ShoppingBag, ArrowLeft, Truck, Shield, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export function CartPage() {
-  const { cart, loading, total, itemCount } = useCart()
+  const { toast } = useToast()
+  const [cart, setCart] = useState<Cart | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
+
+  useEffect(() => {
+    loadCart()
+  }, [])
+
+  const loadCart = async () => {
+    try {
+      setLoading(true)
+      const cartData = await cartApi.getCart()
+      setCart(cartData)
+    } catch (error) {
+      console.error('Error loading cart:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load cart. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const itemCount = cart?.cart_items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const total = cart?.cart_items?.reduce((sum, item) => sum + item.quantity * item.unit_price, 0) || 0
 
   if (loading) {
     return (
@@ -52,7 +80,7 @@ export function CartPage() {
     )
   }
 
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!cart || !cart.cart_items || cart.cart_items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-16">
@@ -104,9 +132,9 @@ export function CartPage() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y">
-                {cart.items.map((item, index) => (
-                  <div key={item.id} className="p-6">
-                    <CartItem item={item} isUpdating={isUpdating} setIsUpdating={setIsUpdating} />
+                {cart.cart_items.map((item, index) => (
+                  <div key={item.ID} className="p-6">
+                    <CartItem item={item} isUpdating={isUpdating} setIsUpdating={setIsUpdating} onCartUpdate={loadCart} />
                   </div>
                 ))}
               </div>

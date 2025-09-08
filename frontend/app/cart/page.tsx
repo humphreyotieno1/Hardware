@@ -1,15 +1,11 @@
+import type { Metadata } from "next"
 import { CartPage } from "@/components/cart/cart-page"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
 
-export default function Cart() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <CartPage />
-      </main>
-      <Footer />
-    </div>
-  )
+export const metadata: Metadata = {
+  title: "Shopping Cart | Hardware Store",
+  description: "Review and manage your cart items",
+}
+
+export default function CartPageRoute() {
+  return <CartPage />
 }

@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/api"
+import { cartApi, wishlistApi } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
-import { ShoppingCart, Heart, Star } from "lucide-react"
+import { ShoppingCart, Heart, Star, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
 interface ProductListCardProps {
   product: Product
@@ -23,23 +26,72 @@ export function ProductListCard({
   showCategory = true,
   className = ""
 }: ProductListCardProps) {
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState({
+    cart: false,
+    wishlist: false
+  })
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
     if (onAddToCart) {
       onAddToCart(product.id)
-    } else {
-      console.log('Add to cart:', product.id)
+      return
+    }
+
+    try {
+      setLoading(prev => ({ ...prev, cart: true }))
+      await cartApi.addItem({
+        product_id: product.id,
+        quantity: 1
+      })
+      
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      })
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(prev => ({ ...prev, cart: false }))
     }
   }
 
-  const handleAddToWishlist = (e: React.MouseEvent) => {
+  const handleAddToWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
     if (onAddToWishlist) {
       onAddToWishlist(product.id)
-    } else {
-      console.log('Add to wishlist:', product.id)
+      return
+    }
+
+    try {
+      setLoading(prev => ({ ...prev, wishlist: true }))
+      await wishlistApi.addItem({
+        product_id: product.id
+      })
+      
+      toast({
+        title: "Added to wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      })
+    } catch (error) {
+      console.error('Error adding to wishlist:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add item to wishlist. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(prev => ({ ...prev, wishlist: false }))
     }
   }
 
@@ -126,19 +178,28 @@ export function ProductListCard({
                   size="sm"
                   className="h-8 w-8 p-0"
                   onClick={handleAddToWishlist}
+                  disabled={loading.wishlist}
                 >
-                  <Heart className="h-4 w-4" />
+                  {loading.wishlist ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Heart className="h-4 w-4" />
+                  )}
                 </Button>
 
                 {/* Add to Cart Button */}
                 <Button 
                   size="sm" 
-                  disabled={product.stock_quantity === 0}
+                  disabled={product.stock_quantity === 0 || loading.cart}
                   onClick={handleAddToCart}
                   className="text-xs px-3 py-1"
                 >
-                  <ShoppingCart className="mr-1 h-3 w-3" />
-                  {product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
+                  {loading.cart ? (
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="mr-1 h-3 w-3" />
+                  )}
+                  {loading.cart ? "Adding..." : product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
                 </Button>
               </div>
             </div>

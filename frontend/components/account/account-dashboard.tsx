@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -14,10 +14,12 @@ import { Progress } from "@/components/ui/progress"
 import { 
   User, Package, Heart, MapPin, Settings, Truck, Calendar, Phone, Edit, Trash2, Plus, Eye, 
   Bell, Shield, CreditCard, Star, TrendingUp, Clock, CheckCircle, AlertCircle, 
-  ArrowRight, Download, Filter, Search, MoreHorizontal, LogOut, UserCheck
+  ArrowRight, Download, Filter, Search, MoreHorizontal, LogOut, UserCheck, Loader2
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
+import { ordersApi, wishlistApi, notificationsApi, authApi } from "@/lib/api"
+import type { Order, WishlistItem, Notification } from "@/lib/api/types"
 import Link from "next/link"
 
 export function AccountDashboard() {
@@ -31,90 +33,75 @@ export function AccountDashboard() {
     phone: user?.phone || "",
   })
 
-  // Enhanced mock data - replace with actual API calls
-  const orders = [
-    {
-      id: "ORD-001",
-      date: "2024-01-15",
-      status: "delivered",
-      total: 2450.0,
-      items: 3,
-      trackingNumber: "TRK123456789",
-      items_details: [
-        { name: "Professional Drill Set", quantity: 1, price: 1200 },
-        { name: "Safety Helmet", quantity: 2, price: 1250 }
-      ]
-    },
-    {
-      id: "ORD-002",
-      date: "2024-01-10",
-      status: "processing",
-      total: 890.5,
-      items: 2,
-      trackingNumber: "TRK987654321",
-      items_details: [
-        { name: "Hammer Set", quantity: 1, price: 450 },
-        { name: "Measuring Tape", quantity: 1, price: 440.5 }
-      ]
-    },
-    {
-      id: "ORD-003",
-      date: "2024-01-05",
-      status: "shipped",
-      total: 3200.0,
-      items: 4,
-      trackingNumber: "TRK456789123",
-      items_details: [
-        { name: "Power Saw", quantity: 1, price: 1800 },
-        { name: "Work Gloves", quantity: 3, price: 1400 }
-      ]
-    },
-  ]
+  // API data state
+  const [orders, setOrders] = useState<Order[]>([])
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState({
+    orders: false,
+    wishlist: false,
+    notifications: false,
+    profile: false
+  })
+
+  // Load data on component mount
+  useEffect(() => {
+    loadAccountData()
+  }, [])
+
+  const loadAccountData = async () => {
+    try {
+      setLoading(prev => ({ ...prev, orders: true, wishlist: true, notifications: true }))
+      
+      const [ordersData, wishlistData, notificationsData] = await Promise.all([
+        ordersApi.getUserOrders(),
+        wishlistApi.getWishlist(),
+        notificationsApi.getUserNotifications(10, 0)
+      ])
+      
+      setOrders(ordersData)
+      setWishlistItems(wishlistData)
+      setNotifications(notificationsData.notifications)
+    } catch (error) {
+      console.error('Error loading account data:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load account data",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(prev => ({ ...prev, orders: false, wishlist: false, notifications: false }))
+    }
+  }
 
   const accountStats = {
     totalOrders: orders.length,
     totalSpent: orders.reduce((sum, order) => sum + order.total, 0),
-    loyaltyPoints: 1250,
-    memberSince: "2023-08-15",
-    lastOrder: orders[0]?.date,
+    loyaltyPoints: Math.floor(orders.reduce((sum, order) => sum + order.total, 0) / 100), // 1 point per 100 spent
+    memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString() : "Unknown",
+    lastOrder: orders[0]?.placed_at ? new Date(orders[0].placed_at).toLocaleDateString() : "No orders yet",
   }
 
-  const wishlistItems = [
-    {
-      id: 1,
-      name: "Professional Drill Set",
-      price: 299.99,
-      image: "/drill-set.png",
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Heavy Duty Hammer",
-      price: 45.99,
-      image: "/claw-hammer.png",
-      inStock: false,
-    },
-  ]
-
+  // Mock data for addresses and service requests (these endpoints weren't provided)
   const addresses = [
     {
       id: 1,
       type: "home",
-      name: "John Doe",
+      name: user?.full_name || "User",
       street: "123 Main Street",
       city: "Nairobi",
       postalCode: "00100",
-      phone: "+254 700 123 456",
+      phone: user?.phone || "+254 700 123 456",
       isDefault: true,
     },
     {
       id: 2,
       type: "work",
-      name: "John Doe",
+      name: user?.full_name || "User",
       street: "456 Business Ave",
       city: "Nairobi",
       postalCode: "00200",
-      phone: "+254 700 123 456",
+      phone: user?.phone || "+254 700 123 456",
       isDefault: false,
     },
   ]
@@ -173,14 +160,34 @@ export function AccountDashboard() {
     }
   }
 
-  const handleProfileUpdate = () => {
-    // TODO: Implement profile update API call
-    toast({
-      title: "Profile updated successfully!",
-      description: "Your profile information has been updated.",
-      variant: "success",
-    })
-    setIsEditingProfile(false)
+  const handleProfileUpdate = async () => {
+    try {
+      setLoading(prev => ({ ...prev, profile: true }))
+      
+      await authApi.updateProfile({
+        full_name: profileData.full_name,
+        phone: profileData.phone
+      })
+      
+      toast({
+        title: "Profile updated successfully!",
+        description: "Your profile information has been updated.",
+        variant: "success",
+      })
+      setIsEditingProfile(false)
+      
+      // Reload user data
+      window.location.reload() // Simple refresh to get updated user data
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(prev => ({ ...prev, profile: false }))
+    }
   }
 
   const handleLogout = async () => {
@@ -329,14 +336,14 @@ export function AccountDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {orders.slice(0, 3).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div key={order.ID} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
                             {getStatusIcon(order.status)}
                           </div>
                           <div>
-                            <p className="font-semibold">{order.id}</p>
-                            <p className="text-sm text-muted-foreground">{new Date(order.date).toLocaleDateString()}</p>
+                            <p className="font-semibold">{order.ID}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.placed_at).toLocaleDateString()}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -571,8 +578,20 @@ export function AccountDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                {loading.orders ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <span>Loading orders...</span>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No orders found</p>
+                    <p className="text-sm">Your order history will appear here</p>
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                  <div key={order.ID} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div className="flex items-start gap-4">
                         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
@@ -580,24 +599,24 @@ export function AccountDashboard() {
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-lg">{order.id}</p>
+                            <p className="font-semibold text-lg">{order.ID}</p>
                             <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            Placed on {new Date(order.date).toLocaleDateString('en-US', { 
+                            Placed on {new Date(order.placed_at).toLocaleDateString('en-US', { 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
                             })}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Tracking: {order.trackingNumber}
+                            Order ID: {order.ID}
                           </p>
                         </div>
                       </div>
                       <div className="flex flex-col lg:items-end gap-2">
                         <p className="text-xl font-bold text-foreground">KES {order.total.toLocaleString()}</p>
-                        <p className="text-sm text-muted-foreground">{order.items} items</p>
+                        <p className="text-sm text-muted-foreground">{order.order_items.length} items</p>
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm">
                             <Eye className="h-4 w-4 mr-1" />
@@ -620,21 +639,22 @@ export function AccountDashboard() {
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-sm font-medium text-muted-foreground mb-2">Items:</p>
                       <div className="space-y-1">
-                        {order.items_details?.slice(0, 2).map((item, index) => (
+                        {order.order_items?.slice(0, 2).map((item, index) => (
                           <div key={index} className="flex justify-between text-sm">
-                            <span>{item.name} x{item.quantity}</span>
-                            <span>KES {item.price.toLocaleString()}</span>
+                            <span>{item.product?.name || 'Product'} x{item.quantity}</span>
+                            <span>KES {(item.unit_price * item.quantity).toLocaleString()}</span>
                           </div>
                         ))}
-                        {order.items_details && order.items_details.length > 2 && (
+                        {order.order_items && order.order_items.length > 2 && (
                           <p className="text-xs text-muted-foreground">
-                            +{order.items_details.length - 2} more items
+                            +{order.order_items.length - 2} more items
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -651,22 +671,34 @@ export function AccountDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {wishlistItems.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4 space-y-3">
+                {loading.wishlist ? (
+                  <div className="col-span-full flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <span>Loading wishlist...</span>
+                  </div>
+                ) : wishlistItems.length === 0 ? (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No items in wishlist</p>
+                    <p className="text-sm">Items you save will appear here</p>
+                  </div>
+                ) : (
+                  wishlistItems.map((item) => (
+                  <div key={item.ID} className="border rounded-lg p-4 space-y-3">
                     <img
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
+                      src={item.product?.images_json?.[0] || "/placeholder.svg"}
+                      alt={item.product?.name || "Product"}
                       className="w-full h-32 object-cover rounded-md"
                     />
                     <div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-lg font-bold text-primary">KSh {item.price.toLocaleString()}</p>
-                      <p className={`text-sm ${item.inStock ? "text-green-600" : "text-red-600"}`}>
-                        {item.inStock ? "In Stock" : "Out of Stock"}
+                      <h3 className="font-semibold">{item.product?.name || "Product"}</h3>
+                      <p className="text-lg font-bold text-primary">KSh {item.product?.price?.toLocaleString() || "0"}</p>
+                      <p className={`text-sm ${(item.product?.stock_quantity || 0) > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {(item.product?.stock_quantity || 0) > 0 ? "In Stock" : "Out of Stock"}
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" disabled={!item.inStock}>
+                      <Button size="sm" disabled={(item.product?.stock_quantity || 0) <= 0}>
                         Add to Cart
                       </Button>
                       <Button variant="outline" size="sm">
@@ -674,7 +706,8 @@ export function AccountDashboard() {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

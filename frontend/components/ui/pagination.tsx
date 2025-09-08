@@ -108,7 +108,7 @@ export function Pagination({
 
           return (
             <Button
-              key={pageNumber}
+              key={`page-${pageNumber}`}
               variant={isCurrentPage ? "default" : "outline"}
               size="sm"
               onClick={() => handlePageChange(pageNumber)}

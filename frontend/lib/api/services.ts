@@ -1,34 +1,24 @@
 import apiClient from "./client"
-import type { ServiceRequest } from "../types"
+import type { ServiceRequestDetails, ServiceRequestResponse, AcceptQuoteRequest } from "./types"
 
 export const servicesApi = {
-  // Submit a new service request
-  submitRequest: async (request: Omit<ServiceRequest, "id" | "status" | "created_at">) => {
-    return apiClient.post("/services/requests", request)
+  async requestService(serviceData: ServiceRequestDetails): Promise<{ message: string; request_id: string }> {
+    const response = await apiClient.post<{ message: string; request_id: string }>("/services/request", serviceData)
+    return response.data!
   },
 
-  // Get service request by ID
-  getRequest: async (id: string) => {
-    return apiClient.get(`/services/requests/${id}`)
+  async getUserServiceRequests(): Promise<ServiceRequestResponse[]> {
+    const response = await apiClient.get<ServiceRequestResponse[]>("/services/requests")
+    return response.data!
   },
 
-  // Get user's service requests
-  getUserRequests: async () => {
-    return apiClient.get("/services/requests")
+  async getServiceRequestDetails(requestId: string): Promise<ServiceRequestResponse> {
+    const response = await apiClient.get<ServiceRequestResponse>(`/services/requests/${requestId}`)
+    return response.data!
   },
 
-  // Update service request status (admin)
-  updateRequestStatus: async (id: string, status: string, notes?: string) => {
-    return apiClient.patch(`/services/requests/${id}/status`, { status, notes })
-  },
-
-  // Get available service types and pricing
-  getServiceTypes: async () => {
-    return apiClient.get("/services/types")
-  },
-
-  // Get technician availability
-  getTechnicianAvailability: async (serviceType: string, date: string) => {
-    return apiClient.get(`/services/availability?type=${serviceType}&date=${date}`)
+  async acceptQuote(requestId: string, quoteData: AcceptQuoteRequest): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(`/services/requests/${requestId}/accept-quote`, quoteData)
+    return response.data!
   },
 }
