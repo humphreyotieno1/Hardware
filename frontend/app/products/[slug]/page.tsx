@@ -1,6 +1,12 @@
 import { ProductDetail } from "@/components/catalog/product-detail"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Product | Grahad Ventures Limited",
+  description: "Our product details",
+}
 
 interface ProductPageProps {
   params: {

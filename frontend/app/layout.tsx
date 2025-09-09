@@ -17,9 +17,27 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "Hardware Store - Professional Tools & Supplies",
+  title: "Grahad Ventures Limited - Professional Tools & Supplies",
   description: "Your trusted partner for construction and hardware supplies",
   generator: "v0.app",
+  icons: {
+    icon: [
+      { url: "/logo.png", sizes: "any" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/logo.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { url: "/logo.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
+  themeColor: "#171717",
+  viewport: "width=device-width, initial-scale=1",
 }
 
 export default function RootLayout({

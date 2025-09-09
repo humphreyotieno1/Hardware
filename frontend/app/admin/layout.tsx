@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { AdminGuard } from "@/components/auth/admin-guard"
 
 export const metadata: Metadata = {
-  title: "Admin | Hardware Store",
+  title: "Admin | Grahad Ventures Limited",
   description: "Admin portal for managing hardware store operations",
 }
 

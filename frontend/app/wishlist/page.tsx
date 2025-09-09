@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/footer"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export const metadata: Metadata = {
-  title: "Wishlist | Hardware Store",
+  title: "Wishlist | Grahad Ventures Limited",
   description: "Your saved items and favorites",
 }
 

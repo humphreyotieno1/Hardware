@@ -4,6 +4,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Brands | Grahad Ventures Limited",
+  description: "Our brand partners and their products",
+}
 
 // Dummy brand data
 const brands = [

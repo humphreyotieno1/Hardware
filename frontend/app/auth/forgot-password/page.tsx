@@ -1,6 +1,12 @@
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 import Link from "next/link"
 import { Home } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Forgot Password | Grahad Ventures Limited",
+  description: "Forgot your password? Reset it here",
+}
 
 export default function ForgotPasswordPage() {
   return (

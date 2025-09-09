@@ -18,6 +18,8 @@ import {
   Zap
 } from "lucide-react"
 
+// The SystemHealth interface only has: service, status, timestamp, version
+
 export function SystemHealthMonitor() {
   const [health, setHealth] = useState<SystemHealth | null>(null)
   const [loading, setLoading] = useState(true)
@@ -69,11 +71,6 @@ export function SystemHealthMonitor() {
       default:
         return <Badge variant="outline">Unknown</Badge>
     }
-  }
-
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`
-    return `${(ms / 1000).toFixed(2)}s`
   }
 
   const formatTimestamp = (timestamp: number) => {
@@ -145,8 +142,8 @@ export function SystemHealthMonitor() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-foreground">{formatDuration(health.duration)}</div>
-              <div className="text-sm text-muted-foreground">Response Time</div>
+              <div className="text-2xl font-bold text-foreground">{health.service}</div>
+              <div className="text-sm text-muted-foreground">Service Name</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground">{formatTimestamp(health.timestamp)}</div>
@@ -162,86 +159,18 @@ export function SystemHealthMonitor() {
         </CardContent>
       </Card>
 
-      {/* Services Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Database */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Database className="h-5 w-5" />
-              <span>Database</span>
-              {getStatusIcon(health.services.database.status)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                {getStatusBadge(health.services.database.status)}
-              </div>
-              {health.services.database.error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                  {health.services.database.error}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Redis */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Server className="h-5 w-5" />
-              <span>Redis Cache</span>
-              {getStatusIcon(health.services.redis.status)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                {getStatusBadge(health.services.redis.status)}
-              </div>
-              {health.services.redis.error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                  {health.services.redis.error}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* External Services */}
+      {/* Version Info */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Zap className="h-5 w-5" />
-            <span>External Services</span>
-            {getStatusIcon(health.services.external_services.status)}
+            <Database className="h-5 w-5" />
+            <span>Service Version</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Overall Status</span>
-              {getStatusBadge(health.services.external_services.status)}
-            </div>
-            
-            <Separator />
-            
-            <div>
-              <h4 className="text-sm font-medium mb-3">Connected Services</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {health.services.external_services.services.map((service) => (
-                  <div key={service} className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm capitalize">{service}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Version</span>
+            <span className="text-foreground font-mono">{health.version}</span>
           </div>
         </CardContent>
       </Card>
@@ -251,15 +180,14 @@ export function SystemHealthMonitor() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Clock className="h-5 w-5" />
-            <span>Health History</span>
+            <span>Health Monitoring</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-sm text-muted-foreground">
             <p>• System health is automatically monitored every 30 seconds</p>
-            <p>• All services are checked for availability and performance</p>
-            <p>• External service integrations are verified for connectivity</p>
-            <p>• Database and Redis connections are tested for stability</p>
+            <p>• The current API only provides overall service status, version, and last checked time</p>
+            <p>• For more detailed health checks, please update the backend API</p>
           </div>
         </CardContent>
       </Card>

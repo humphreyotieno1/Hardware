@@ -15,17 +15,10 @@ const getApiClient = () => {
 
 // System Health
 export interface SystemHealth {
+  service: string
   status: string
   timestamp: number
-  duration: number
-  services: {
-    database: { status: string; error: string }
-    redis: { status: string; error: string }
-    external_services: {
-      status: string
-      services: string[]
-    }
-  }
+  version: string
 }
 
 // Categories
@@ -57,6 +50,7 @@ export interface AdminProduct {
   stock_quantity: number
   images_json: string[]
   is_active: boolean
+  is_featured: boolean
   created_at: string
   updated_at: string
 }
@@ -71,6 +65,7 @@ export interface CreateProductRequest {
   stock_quantity: number
   images_json: string[]
   is_active: boolean
+  is_featured: boolean
 }
 
 export interface UpdateProductRequest {
@@ -83,6 +78,7 @@ export interface UpdateProductRequest {
   stock_quantity?: number
   images_json?: string[]
   is_active?: boolean
+  is_featured?: boolean
 }
 
 export interface AdminProductsResponse {
@@ -250,7 +246,7 @@ export interface UsersReport {
 export const adminApi = {
   // System Health
   getSystemHealth: async (): Promise<SystemHealth> => {
-    const response = await getApiClient().get<SystemHealth>("/health/full")
+    const response = await getApiClient().get<SystemHealth>("/health")
     return response.data!
   },
 
@@ -294,7 +290,10 @@ export const adminApi = {
     if (params?.sort) searchParams.append("sort", params.sort)
     if (params?.order) searchParams.append("order", params.order)
 
-    const response = await getApiClient().get<AdminProductsResponse>(`/api/admin/products${searchParams.toString()}`)
+    const queryString = searchParams.toString()
+    const url = `/api/admin/products${queryString ? `?${queryString}` : ""}`
+
+    const response = await getApiClient().get<AdminProductsResponse>(url)
     return response.data!
   },
 
@@ -405,8 +404,8 @@ export const adminApi = {
     return response.data!
   },
 
-  deleteUser: async (id: string): Promise<{ message: string }> => {
-    const response = await getApiClient().delete<{ message: string }>(`/api/admin/users/${id}`)
+  deleteUser: async (user_id: string): Promise<{ message: string }> => {
+    const response = await getApiClient().delete<{ message: string }>(`/api/admin/users/${user_id}`)
     return response.data!
   },
 

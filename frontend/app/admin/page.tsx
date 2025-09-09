@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { AdminDashboard } from "@/components/admin/admin-dashboard"
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | Hardware Store",
+  title: "Admin Dashboard | Grahad Ventures Limited",
   description: "Manage products, orders, inventory, and analytics",
 }
 

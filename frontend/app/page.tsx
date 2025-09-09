@@ -13,8 +13,8 @@ export default function HomePage() {
       <Header />
       <main>
         <HeroSection />
-        <CategoryGrid />
         <FeaturedProducts />
+        <CategoryGrid />
         <BrandsSection />
         <TestimonialsSection />
         <NewsletterSignup />

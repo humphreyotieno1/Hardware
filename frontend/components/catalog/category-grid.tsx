@@ -250,84 +250,84 @@ export function CategoryGrid() {
           </div>
         </div>
 
-        {/* Enhanced Category Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {categoriesWithCounts.map((category, index) => {
-            const IconComponent = category.icon
-            return (
-              <div
-                key={category.slug}
-                className="animate-fade-in-up hover:-translate-y-1 transition-all duration-300"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <Link href={`/categories/${category.slug}`}>
-                  <Card className={`h-full hover:shadow-xl transition-all duration-300 group border-2 hover:border-primary/30 relative overflow-hidden ${category.bgColor}`}>
-                    {/* Faded Background Image */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300"
-                      style={{ backgroundImage: `url(${category.backgroundImage})` }}
-                    />
-                    {/* Content Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
-                    <CardContent className="p-4 sm:p-6 text-center relative z-10">
-                      {/* Popular Badge */}
-                      {/* {category.popular && (
-                        <div className="absolute -top-2 sm:-top-3 -right-2 sm:-right-3 bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-bold shadow-lg">
-                          <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+        {/* Enhanced Category Carousel */}
+        <div className="relative">
+          <div className="flex space-x-4 sm:space-x-6 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
+            {categoriesWithCounts.map((category, index) => {
+              const IconComponent = category.icon
+              return (
+                <div
+                  key={category.slug}
+                  className="flex-none w-64 animate-fade-in-up hover:-translate-y-1 transition-all duration-300"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <Link href={`/categories/${category.slug}`} className="block h-full">
+                    <Card className={`h-full hover:shadow-xl transition-all duration-300 group border-2 hover:border-primary/30 relative overflow-hidden ${category.bgColor}`}>
+                      {/* Faded Background Image */}
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300"
+                        style={{ backgroundImage: `url(${category.backgroundImage})` }}
+                      />
+                      {/* Content Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
+                      <CardContent className="p-4 text-center relative z-10 h-full flex flex-col">
+                        {/* Icon */}
+                        <div className="mb-3">
+                          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-md group-hover:shadow-lg transition-all duration-300`}>
+                            <IconComponent
+                              className={`h-6 w-6 ${category.color} group-hover:scale-110 transition-transform duration-300`}
+                            />
+                          </div>
                         </div>
-                      )} */}
-                      
-                      {/* Icon */}
-                      <div className="mb-3 sm:mb-4">
-                        <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full bg-white shadow-md group-hover:shadow-lg transition-all duration-300`}>
-                          <IconComponent
-                            className={`h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 ${category.color} group-hover:scale-110 transition-transform duration-300`}
-                          />
+                        
+                        {/* Category Info */}
+                        <h3 className="font-bold text-base text-foreground mb-2 group-hover:text-primary transition-colors">
+                          {category.name}
+                        </h3>
+                        
+                        <p className="text-xs text-muted-foreground mb-3 text-pretty leading-relaxed line-clamp-2">
+                          {category.description}
+                        </p>
+                        
+                        <div className="mt-auto">
+                          {/* Product Count */}
+                          <div className="mb-2">
+                            <Badge variant="secondary" className="text-xs">
+                              <Package className="h-3 w-3 mr-1" />
+                              {category.productCount} {category.productCount === 1 ? 'product' : 'products'}
+                            </Badge>
+                          </div>
+                          
+                          {/* Price Range */}
+                          <div className="text-xs font-semibold text-foreground mb-1">
+                            {category.priceRange}
+                          </div>
+                          
+                          {/* Discount/Feature */}
+                          <div className="text-xs text-primary font-medium mb-2">
+                            {category.discount}
+                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Category Info */}
-                      <h3 className="font-bold text-base sm:text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
-                        {category.name}
-                      </h3>
-                      
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 text-pretty leading-relaxed">
-                        {category.description}
-                      </p>
-                      
-                      {/* Product Count */}
-                      <div className="mb-3">
-                        <Badge variant="secondary" className="text-sm">
-                          <Package className="h-3 w-3 mr-1" />
-                          {category.productCount} {category.productCount === 1 ? 'product' : 'products'}
-                        </Badge>
-                      </div>
-                      
-                      {/* Price Range */}
-                      <div className="text-xs sm:text-sm font-semibold text-foreground mb-2">
-                        {category.priceRange}
-                      </div>
-                      
-                      {/* Discount/Feature */}
-                      <div className="text-xs text-primary font-medium">
-                        {category.discount}
-                      </div>
-                      
-                      {/* Hover Effect */}
-                      <div className="mt-3 sm:mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="inline-flex items-center text-primary text-xs sm:text-sm font-medium">
-                          <span>Explore {category.name}</span>
-                          <svg className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                        
+                        {/* Hover Effect */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="inline-flex items-center text-primary text-xs font-medium">
+                            <span>Explore {category.name}</span>
+                            <svg className="ml-1 h-3 w-3 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </div>
-            )
-          })}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+          
+          {/* Scroll hint for desktop */}
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none hidden sm:block"></div>
         </div>
 
         {/* Call to Action */}

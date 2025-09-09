@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { ServiceRequestForm } from "@/components/services/service-request-form"
 
 export const metadata: Metadata = {
-  title: "Request Service | Hardware Store",
+  title: "Request Service | Grahad Ventures Limited",
   description: "Request professional services for your hardware needs",
 }
 
