@@ -1,6 +1,12 @@
 import { RegisterForm } from "@/components/auth/register-form"
 import Link from "next/link"
 import { Home } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Register | Grahad Ventures Limited",
+  description: "Register to your account to access your dashboard and manage your orders",
+}
 
 export default function RegisterPage() {
   return (

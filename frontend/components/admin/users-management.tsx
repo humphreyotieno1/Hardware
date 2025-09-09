@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { adminApi, AdminUser, UpdateUserRoleRequest } from "@/lib/api/admin"
-import { Users, Shield, UserCheck, UserX, Search, RefreshCw, Edit, Trash2 } from "lucide-react"
+import { UserViewDialog } from "./user-view-dialog"
+import { Users, Shield, UserCheck, UserX, Search, RefreshCw, Edit, Trash2, Eye } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function UsersManagement() {
@@ -86,6 +87,19 @@ export function UsersManagement() {
 
   const handleDeleteUser = async (user: AdminUser) => {
     try {
+      console.log("Deleting user with ID:", user.ID)
+      console.log("User data:", user)
+      
+      // Check if user has any dependencies that might prevent deletion
+      if (user.role === "admin") {
+        toast({
+          title: "Warning",
+          description: "Cannot delete admin users. Please change their role first.",
+          variant: "destructive",
+        })
+        return
+      }
+      
       await adminApi.deleteUser(user.ID)
       toast({
         title: "Success",
@@ -93,9 +107,25 @@ export function UsersManagement() {
       })
       fetchUsers()
     } catch (error) {
+      console.error("Error deleting user:", error)
+      
+      // More specific error handling
+      let errorMessage = "Failed to delete user"
+      if (error instanceof Error) {
+        if (error.message.includes("500")) {
+          errorMessage = "Server error: User may have associated orders or data that prevent deletion"
+        } else if (error.message.includes("404")) {
+          errorMessage = "User not found"
+        } else if (error.message.includes("403")) {
+          errorMessage = "Permission denied"
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: errorMessage,
         variant: "destructive",
       })
     }
@@ -249,6 +279,7 @@ export function UsersManagement() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
+                        <UserViewDialog user={user} />
                         <Button
                           variant="outline"
                           size="sm"

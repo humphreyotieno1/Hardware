@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 
 export const metadata: Metadata = {
-  title: "My Account | Hardware Store",
+  title: "My Account | Grahad Ventures Limited",
   description: "Manage your account, orders, and preferences",
 }
 

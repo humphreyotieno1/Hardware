@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { ServiceTracker } from "@/components/services/service-tracker"
 
 export const metadata: Metadata = {
-  title: "Track Service | Hardware Store",
+  title: "Track Service | Grahad Ventures Limited",
   description: "Track your service request status and updates",
 }
 

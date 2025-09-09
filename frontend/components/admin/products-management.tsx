@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { adminApi, AdminProduct } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
+import { ProductFormDialog } from "./product-form-dialog"
+import { ProductViewDialog } from "./product-view-dialog"
 import { 
   Package, 
   Search, 
@@ -106,6 +109,14 @@ export function ProductsManagement() {
     }
   }
 
+  const getFeaturedBadge = (isFeatured: boolean) => {
+    return isFeatured ? (
+      <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+        Featured
+      </Badge>
+    ) : null
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -125,10 +136,7 @@ export function ProductsManagement() {
             Manage your product catalog
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Product
-        </Button>
+        <ProductFormDialog onSuccess={loadProducts} />
       </div>
 
       {/* Search and Filters */}
@@ -171,10 +179,7 @@ export function ProductsManagement() {
               <p className="text-muted-foreground mb-4">
                 {searchQuery ? "No products match your search criteria." : "Get started by adding your first product."}
               </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
+              <ProductFormDialog onSuccess={loadProducts} />
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -187,6 +192,7 @@ export function ProductsManagement() {
                     <TableHead>Price</TableHead>
                     <TableHead>Stock</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Featured</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -239,20 +245,45 @@ export function ProductsManagement() {
                         {getStatusBadge(product.is_active)}
                       </TableCell>
                       <TableCell>
+                        {getFeaturedBadge(product.is_featured)}
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleDeleteProduct(product.ID)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <ProductViewDialog product={product} />
+                          <ProductFormDialog 
+                            product={product} 
+                            onSuccess={loadProducts}
+                            trigger={
+                              <Button size="sm" variant="outline">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            }
+                          />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                                  All product data will be permanently removed.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteProduct(product.ID)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>

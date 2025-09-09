@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Home } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Sign In | Hardware Store",
+  title: "Sign In | Grahad Ventures Limited",
   description: "Sign in to your account to access your dashboard and manage your orders",
 }
 

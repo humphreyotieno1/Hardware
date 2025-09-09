@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/footer"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export const metadata: Metadata = {
-  title: "Shopping Cart | Hardware Store",
+  title: "Shopping Cart | Grahad Ventures Limited",
   description: "Review and manage your cart items",
 }
 
