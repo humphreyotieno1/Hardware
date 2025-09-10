@@ -6,7 +6,7 @@ let apiClient: ApiClient | null = null
 const getApiClient = () => {
   if (!apiClient) {
     apiClient = new ApiClient({
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://hardware-backend-ocgv.onrender.com/",
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://api.grahadventures.co.ke/" || "https://hardware-backend-ocgv.onrender.com/",
       timeout: 15000,
     })
   }
