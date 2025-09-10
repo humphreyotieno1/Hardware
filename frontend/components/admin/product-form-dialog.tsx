@@ -9,7 +9,9 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { adminApi, AdminProduct, CreateProductRequest, UpdateProductRequest, Category } from "@/lib/api/admin"
+import { uploadApi, UploadedFile } from "@/lib/api/upload"
 import { useToast } from "@/hooks/use-toast"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { Loader2, Plus, Edit } from "lucide-react"
 
 interface ProductFormDialogProps {
@@ -22,6 +24,7 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
+  const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([])
   const [formData, setFormData] = useState<CreateProductRequest>({
     sku: "",
     name: "",
@@ -54,6 +57,20 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
           is_active: product.is_active,
           is_featured: product.is_featured || false
         })
+        
+        // Convert existing image URLs to UploadedFile format for editing
+        const existingImages: UploadedFile[] = (product.images_json || []).map((url, index) => ({
+          public_id: `existing-${index}`,
+          url: url,
+          secure_url: url,
+          format: 'jpg',
+          width: 0,
+          height: 0,
+          bytes: 0,
+          filename: `existing-image-${index + 1}.jpg`,
+          size: 0
+        }))
+        setUploadedImages(existingImages)
       } else {
         setFormData({
           sku: "",
@@ -67,6 +84,7 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
           is_active: true,
           is_featured: false
         })
+        setUploadedImages([])
       }
     }
   }, [open, product])
@@ -95,6 +113,16 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
     }))
   }
 
+  const handleImagesChange = (images: UploadedFile[]) => {
+    setUploadedImages(images)
+    // Update formData with image URLs
+    const imageUrls = images.map(img => img.secure_url)
+    setFormData(prev => ({
+      ...prev,
+      images_json: imageUrls
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -118,6 +146,7 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
           description: formData.description,
           price: formData.price,
           stock_quantity: formData.stock_quantity,
+          images_json: formData.images_json,
           is_active: formData.is_active,
           is_featured: formData.is_featured
         }
@@ -260,22 +289,12 @@ export function ProductFormDialog({ product, onSuccess, trigger }: ProductFormDi
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="images">Image URLs (one per line)</Label>
-            <Textarea
-              id="images"
-              value={formData.images_json.join('\n')}
-              onChange={(e) => {
-                const urls = e.target.value.split('\n').filter(url => url.trim() !== '')
-                setFormData(prev => ({ ...prev, images_json: urls }))
-              }}
-              placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter image URLs, one per line. Leave empty if no images.
-            </p>
-          </div>
+          <ImageUpload
+            images={uploadedImages}
+            onImagesChange={handleImagesChange}
+            folder="products"
+            maxFiles={5}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-2">
