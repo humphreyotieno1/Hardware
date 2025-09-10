@@ -9,6 +9,7 @@ export { servicesApi } from "./services"
 export { paymentsApi } from "./payments"
 export { notificationsApi } from "./notifications"
 export { adminApi } from "./admin"
+export { uploadApi } from "./upload"
 
 // Export types
 export * from "./types"

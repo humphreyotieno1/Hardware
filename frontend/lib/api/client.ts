@@ -58,6 +58,11 @@ export class ApiClient {
       ...((options.headers as Record<string, string>) || {}),
     }
 
+    // Don't set Content-Type for FormData, let browser handle it
+    if (options.body instanceof FormData) {
+      delete headers['Content-Type']
+    }
+
     // Add auth token if available
     if (this.token) {
       headers.Authorization = `Bearer ${this.token}`
@@ -129,7 +134,7 @@ export class ApiClient {
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data ? (data instanceof FormData ? data : JSON.stringify(data)) : undefined,
     })
   }
 
