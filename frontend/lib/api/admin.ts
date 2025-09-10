@@ -6,7 +6,7 @@ let apiClient: ApiClient | null = null
 const getApiClient = () => {
   if (!apiClient) {
     apiClient = new ApiClient({
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://api.grahadventures.co.ke/",
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://www.api.grahadventures.co.ke/",
       timeout: 15000,
     })
   }
