@@ -158,7 +158,7 @@ let apiClient: ApiClient | null = null
 const getApiClient = () => {
   if (!apiClient) {
     apiClient = new ApiClient({
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://api.grahadventures.co.ke/api" || "https://hardware-backend-ocgv.onrender.com/api",
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://api.grahadventures.co.ke/api",
       timeout: 15000,
     })
   }
