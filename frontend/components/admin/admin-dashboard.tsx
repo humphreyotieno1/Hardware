@@ -61,6 +61,7 @@ import { OrdersManagement } from "./orders-management"
 import { ServicesManagement } from "./services-management"
 import { UsersManagement } from "./users-management"
 import { ReportsDashboard } from "./reports-dashboard"
+import { MobileSidebar } from "./mobile-sidebar"
 import Link from "next/link"
 
 export function AdminDashboard() {
@@ -95,41 +96,47 @@ export function AdminDashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
+        {/* Mobile Sidebar */}
+        <MobileSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="overview" className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="health" className="flex items-center space-x-2">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Health</span>
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="flex items-center space-x-2">
-              <Tag className="h-4 w-4" />
-              <span className="hidden sm:inline">Categories</span>
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center space-x-2">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Products</span>
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex items-center space-x-2">
-              <TrendingDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Inventory</span>
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center space-x-2">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline">Orders</span>
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center space-x-2">
-              <Wrench className="h-4 w-4" />
-              <span className="hidden sm:inline">Services</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Desktop Tabs - Hidden on mobile */}
+          <div className="hidden lg:block overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-8 min-w-max">
+              <TabsTrigger value="overview" className="flex items-center space-x-2">
+                <BarChart3 className="h-4 w-4" />
+                <span>Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="health" className="flex items-center space-x-2">
+                <Activity className="h-4 w-4" />
+                <span>Health</span>
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="flex items-center space-x-2">
+                <Tag className="h-4 w-4" />
+                <span>Categories</span>
+              </TabsTrigger>
+              <TabsTrigger value="products" className="flex items-center space-x-2">
+                <Package className="h-4 w-4" />
+                <span>Products</span>
+              </TabsTrigger>
+              <TabsTrigger value="inventory" className="flex items-center space-x-2">
+                <TrendingDown className="h-4 w-4" />
+                <span>Inventory</span>
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="flex items-center space-x-2">
+                <ShoppingCart className="h-4 w-4" />
+                <span>Orders</span>
+              </TabsTrigger>
+              <TabsTrigger value="services" className="flex items-center space-x-2">
+                <Wrench className="h-4 w-4" />
+                <span>Services</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>Users</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">

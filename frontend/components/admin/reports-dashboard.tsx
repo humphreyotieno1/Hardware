@@ -43,10 +43,13 @@ export function ReportsDashboard() {
         adminApi.getInventoryReport(),
         adminApi.getUsersReport()
       ])
+      
+      
       setSalesReport(sales)
       setInventoryReport(inventory)
       setUsersReport(users)
     } catch (error) {
+      console.error('Error fetching reports:', error)
       toast({
         title: "Error",
         description: "Failed to fetch reports",
@@ -87,21 +90,21 @@ export function ReportsDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Reports Dashboard</h2>
-          <p className="text-muted-foreground">Analytics and insights for your business</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Reports Dashboard</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Analytics and insights for your business</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button onClick={fetchReports} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
@@ -115,8 +118,8 @@ export function ReportsDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center space-x-4">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1">
               <Label htmlFor="start_date">Start Date</Label>
               <Input
                 id="start_date"
@@ -125,7 +128,7 @@ export function ReportsDashboard() {
                 onChange={(e) => setDateRange({ ...dateRange, start_date: e.target.value })}
               />
             </div>
-            <div>
+            <div className="flex-1">
               <Label htmlFor="end_date">End Date</Label>
               <Input
                 id="end_date"
@@ -135,7 +138,7 @@ export function ReportsDashboard() {
               />
             </div>
             <div className="flex items-end">
-              <Button onClick={handleDateRangeChange}>
+              <Button onClick={handleDateRangeChange} className="w-full sm:w-auto">
                 Update Reports
               </Button>
             </div>
@@ -158,13 +161,13 @@ export function ReportsDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">
-                      {salesReport ? formatPrice(salesReport.total_sales) : 'N/A'}
+                      {salesReport?.total_sales ? formatPrice(salesReport.total_sales) : '$0.00'}
                     </div>
                     <div className="text-sm text-muted-foreground">Total Sales</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">
-                      {salesReport ? salesReport.order_count : 'N/A'}
+                      {salesReport?.order_count ?? 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Orders</div>
                   </div>
@@ -233,6 +236,7 @@ export function ReportsDashboard() {
                     </div>
                     <div className="text-sm text-muted-foreground">Total Products</div>
                   </div>
+                  <br />
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">
                       {inventoryReport ? formatPrice(inventoryReport.total_inventory_value) : 'N/A'}

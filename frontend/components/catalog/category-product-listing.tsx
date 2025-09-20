@@ -43,7 +43,6 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [availabilityFilter, setAvailabilityFilter] = useState<"all" | "in-stock" | "out-of-stock">("all")
   const [availableBrands, setAvailableBrands] = useState<string[]>([])
-  const [itemsPerPage, setItemsPerPage] = useState(12)
   const [dynamicPriceRange, setDynamicPriceRange] = useState<number[]>([0, 10000])
 
   const router = useRouter()
@@ -61,7 +60,9 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
           sort: currentSort as any,
         }
 
+        console.log("API call params:", params)
         const response = await productsApi.getProductsByCategory(categorySlug, params)
+        console.log("API response:", { products: response.products.length, total: response.total, page: response.page })
         
         // Extract unique brands from products for filter options
         const brands = [...new Set(response.products.map(p => p.name.split(' ')[0]))].filter(Boolean)
@@ -103,7 +104,10 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
         }
         
         setProducts(filteredProducts)
-        setTotal(filteredProducts.length)
+        
+        // Get the correct category total count
+        const categoryTotal = await productsApi.getCategoryTotalCount(categorySlug)
+        setTotal(categoryTotal)
       } catch (error) {
         console.error("Failed to fetch products:", error)
       } finally {
@@ -127,13 +131,6 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
     router.push(url.toString())
   }
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage)
-    // Reset to first page when changing items per page
-    const url = new URL(window.location.href)
-    url.searchParams.set("page", "1")
-    router.push(url.toString())
-  }
 
   const handlePriceRangeChange = (newRange: number[]) => {
     setPriceRange(newRange)
@@ -225,13 +222,11 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
           </div>
 
           {/* Enhanced Controls */}
-          <ProductControls
-            currentSort={currentSort}
-            onSortChange={handleSortChange}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            totalItems={total}
-          />
+        <ProductControls
+          currentSort={currentSort}
+          onSortChange={handleSortChange}
+          totalItems={total}
+        />
 
           {/* Filter Toggle */}
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="lg:hidden">
@@ -371,9 +366,9 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(total / itemsPerPage)}
+            totalPages={Math.ceil(total / 12)}
             totalItems={total}
-            itemsPerPage={itemsPerPage}
+            itemsPerPage={12}
             onPageChange={handlePageChange}
           />
         </div>

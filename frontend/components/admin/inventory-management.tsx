@@ -13,11 +13,15 @@ import { adminApi, AdminProduct, UpdateStockRequest, LowStockResponse } from "@/
 import { Package, AlertTriangle, Plus, Minus, Edit, RefreshCw, TrendingDown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
+import { SimplePagination } from "@/components/ui/pagination"
 
 export function InventoryManagement() {
   const [lowStockItems, setLowStockItems] = useState<AdminProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [threshold, setThreshold] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null)
   const [updateData, setUpdateData] = useState({ quantity: 0, operation: "add" as "add" | "subtract" | "set" })
@@ -28,7 +32,9 @@ export function InventoryManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getLowStockItems(threshold)
-      setLowStockItems(data.products)
+      setLowStockItems(data.products || [])
+      setTotalItems(data.count || 0)
+      setTotalPages(Math.ceil((data.count || 0) / 20))
     } catch (error) {
       toast({
         title: "Error",
@@ -42,7 +48,7 @@ export function InventoryManagement() {
 
   useEffect(() => {
     fetchLowStockItems()
-  }, [threshold])
+  }, [threshold, currentPage])
 
   const handleUpdateStock = async () => {
     if (!selectedProduct || updateData.quantity < 0) {
@@ -292,6 +298,15 @@ export function InventoryManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

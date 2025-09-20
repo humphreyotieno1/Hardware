@@ -14,6 +14,7 @@ import { adminApi, ServiceRequest, UpdateServiceStatusRequest, CreateServiceQuot
 import { Wrench, Clock, CheckCircle, XCircle, MessageSquare, Calendar, DollarSign, RefreshCw, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
+import { SimplePagination } from "@/components/ui/pagination"
 
 export function ServicesManagement() {
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
@@ -21,6 +22,9 @@ export function ServicesManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isQuoteDialogOpen, setIsQuoteDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null)
@@ -33,10 +37,14 @@ export function ServicesManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getServiceRequests({
+        page: currentPage,
+        limit: 20,
         status: statusFilter === "all" ? undefined : statusFilter,
         type: typeFilter === "all" ? undefined : typeFilter,
       })
-      setServiceRequests(data.requests)
+      setServiceRequests(data.requests || [])
+      setTotalItems(data.total || 0)
+      setTotalPages(Math.ceil((data.total || 0) / 20))
     } catch (error) {
       toast({
         title: "Error",
@@ -50,7 +58,7 @@ export function ServicesManagement() {
 
   useEffect(() => {
     fetchServiceRequests()
-  }, [statusFilter, typeFilter])
+  }, [statusFilter, typeFilter, currentPage])
 
   const handleUpdateStatus = async () => {
     if (!selectedRequest || !statusData.status) {
@@ -448,6 +456,15 @@ export function ServicesManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

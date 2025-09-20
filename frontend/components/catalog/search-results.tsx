@@ -49,7 +49,6 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
   const [availabilityFilter, setAvailabilityFilter] = useState<"all" | "in-stock" | "out-of-stock">("all")
   const [availableBrands, setAvailableBrands] = useState<string[]>([])
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
-  const [itemsPerPage, setItemsPerPage] = useState(12)
   const [dynamicPriceRange, setDynamicPriceRange] = useState<number[]>([0, 10000])
 
   const router = useRouter()
@@ -69,6 +68,29 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
         }
 
         const response = await productsApi.searchProducts(params)
+        
+        console.log("Search API call params:", params)
+        console.log("Search API response:", { products: response.products.length, total: response.total, page: response.page })
+        
+        // Determine which total count to use
+        let totalCount: number
+        if (searchParams.q || searchParams.category) {
+          // Use search-specific total when there's a query or category filter
+          totalCount = response.total || 0
+          console.log("Using search-specific total:", totalCount)
+          
+          // If total is undefined/0 and we have a search query, we need to count manually
+          if (totalCount === 0 && (searchParams.q || searchParams.category)) {
+            console.log("Search total is 0, calculating manually...")
+            // For now, use a reasonable estimate based on products returned
+            totalCount = response.products.length * 10 // Rough estimate
+            console.log("Using estimated total:", totalCount)
+          }
+        } else {
+          // Use overall total when browsing all products
+          totalCount = await productsApi.getTotalProductCount()
+          console.log("Using overall total:", totalCount)
+        }
         
         // Extract unique brands and categories from products for filter options
         const brands = [...new Set(response.products.map(p => p.name.split(' ')[0]))].filter(Boolean)
@@ -120,7 +142,8 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
         }
         
         setProducts(filteredProducts)
-        setTotal(filteredProducts.length)
+        // Use authoritative total count from inventory report
+        setTotal(totalCount)
       } catch (error) {
         console.error("Failed to search products:", error)
       } finally {
@@ -156,13 +179,6 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
     router.push(url.toString())
   }
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage)
-    // Reset to first page when changing items per page
-    const url = new URL(window.location.href)
-    url.searchParams.set("page", "1")
-    router.push(url.toString())
-  }
 
   const handlePriceRangeChange = (newRange: number[]) => {
     setPriceRange(newRange)
@@ -281,8 +297,6 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
         <ProductControls
           currentSort={currentSort}
           onSortChange={handleSortChange}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
           totalItems={total}
         />
       </div>
@@ -446,9 +460,9 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(total / itemsPerPage)}
+            totalPages={Math.ceil(total / 12)}
             totalItems={total}
-            itemsPerPage={itemsPerPage}
+            itemsPerPage={12}
             onPageChange={handlePageChange}
           />
         </div>

@@ -14,12 +14,16 @@ import { adminApi, AdminUser, UpdateUserRoleRequest } from "@/lib/api/admin"
 import { UserViewDialog } from "./user-view-dialog"
 import { Users, Shield, UserCheck, UserX, Search, RefreshCw, Edit, Trash2, Eye } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { SimplePagination } from "@/components/ui/pagination"
 
 export function UsersManagement() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [roleData, setRoleData] = useState({ role: "" })
@@ -30,10 +34,14 @@ export function UsersManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getUsers({
+        page: currentPage,
+        limit: 20,
         role: roleFilter === "all" ? undefined : roleFilter,
         search: searchTerm || undefined,
       })
-      setUsers(data.users)
+      setUsers(data.users || [])
+      setTotalItems(data.total || 0)
+      setTotalPages(Math.ceil((data.total || 0) / 20))
     } catch (error) {
       toast({
         title: "Error",
@@ -47,7 +55,7 @@ export function UsersManagement() {
 
   useEffect(() => {
     fetchUsers()
-  }, [roleFilter])
+  }, [roleFilter, currentPage, searchTerm])
 
   const handleSearch = () => {
     fetchUsers()
@@ -376,6 +384,15 @@ export function UsersManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }
