@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -19,16 +19,10 @@ import Link from "next/link"
 
 interface CategoryProductListingProps {
   categorySlug: string
-  searchParams: {
-    page?: string
-    sort?: string
-    brand?: string
-    minPrice?: string
-    maxPrice?: string
-  }
 }
 
-export function CategoryProductListing({ categorySlug, searchParams }: CategoryProductListingProps) {
+export function CategoryProductListing({ categorySlug }: CategoryProductListingProps) {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -37,8 +31,8 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
   
   // Filter states
   const [priceRange, setPriceRange] = useState([
-    Number.parseInt(searchParams.minPrice || "0"),
-    Number.parseInt(searchParams.maxPrice || "10000")
+    Number.parseInt(searchParams.get("minPrice") || "0"),
+    Number.parseInt(searchParams.get("maxPrice") || "10000")
   ])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [availabilityFilter, setAvailabilityFilter] = useState<"all" | "in-stock" | "out-of-stock">("all")
@@ -46,8 +40,8 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
   const [dynamicPriceRange, setDynamicPriceRange] = useState<number[]>([0, 10000])
 
   const router = useRouter()
-  const currentPage = Number.parseInt(searchParams.page || "1")
-  const currentSort = searchParams.sort || "name"
+  const currentPage = Number.parseInt(searchParams.get("page") || "1")
+  const currentSort = searchParams.get("sort") || "name"
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -116,7 +110,7 @@ export function CategoryProductListing({ categorySlug, searchParams }: CategoryP
     }
 
     fetchProducts()
-  }, [categorySlug, currentPage, currentSort, priceRange, selectedBrands, availabilityFilter])
+  }, [categorySlug, searchParams, currentPage, currentSort, priceRange, selectedBrands, availabilityFilter])
 
   const handleSortChange = (sort: string) => {
     const url = new URL(window.location.href)
