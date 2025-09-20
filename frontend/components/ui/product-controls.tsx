@@ -8,8 +8,6 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Calendar, Star, TrendingUp } from "luc
 interface ProductControlsProps {
   currentSort: string
   onSortChange: (sort: string) => void
-  itemsPerPage: number
-  onItemsPerPageChange: (itemsPerPage: number) => void
   totalItems: number
   className?: string
 }
@@ -17,8 +15,6 @@ interface ProductControlsProps {
 export function ProductControls({
   currentSort,
   onSortChange,
-  itemsPerPage,
-  onItemsPerPageChange,
   totalItems,
   className = ""
 }: ProductControlsProps) {
@@ -73,12 +69,6 @@ export function ProductControls({
     }
   ]
 
-  const itemsPerPageOptions = [
-    { value: 12, label: "12 per page" },
-    { value: 24, label: "24 per page" },
-    { value: 48, label: "48 per page" },
-    { value: 96, label: "96 per page" }
-  ]
 
   const getSortIcon = (value: string) => {
     const option = sortOptions.find(opt => opt.value === value)
@@ -121,22 +111,6 @@ export function ProductControls({
         </Select>
       </div>
 
-      {/* Items Per Page Dropdown */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-muted-foreground">Show</label>
-        <Select value={itemsPerPage.toString()} onValueChange={(value) => onItemsPerPageChange(parseInt(value))}>
-          <SelectTrigger className="w-32 h-10">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {itemsPerPageOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value.toString()}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       {/* Results Info */}
       <div className="flex flex-col gap-2">

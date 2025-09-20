@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { adminApi, AdminOrder } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
+import { SimplePagination } from "@/components/ui/pagination"
 import { 
   ShoppingCart, 
   Search, 
@@ -27,17 +28,23 @@ export function OrdersManagement() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const { toast } = useToast()
 
   const fetchOrders = async () => {
     try {
       setLoading(true)
       const data = await adminApi.getOrders({
-        page: 1,
-        limit: 100,
+        page: currentPage,
+        limit: 20,
         status: statusFilter === "all" ? undefined : statusFilter,
+        search: searchQuery || undefined,
       })
       setOrders(data.orders || [])
+      setTotalItems(data.total || 0)
+      setTotalPages(Math.ceil((data.total || 0) / 20))
     } catch (error) {
       console.error("Error fetching orders:", error)
       toast({
@@ -52,7 +59,7 @@ export function OrdersManagement() {
 
   useEffect(() => {
     fetchOrders()
-  }, [statusFilter])
+  }, [statusFilter, currentPage, searchQuery])
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
@@ -263,6 +270,15 @@ export function OrdersManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

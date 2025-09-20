@@ -12,11 +12,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { adminApi, Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/lib/api/admin"
 import { Plus, Edit, Trash2, Tag, Search, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { SimplePagination } from "@/components/ui/pagination"
 
 export function CategoriesManagement() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -28,8 +32,11 @@ export function CategoriesManagement() {
     try {
       setLoading(true)
       const data = await adminApi.getCategories()
-      setCategories(data)
+      setCategories(data || [])
+      setTotalItems(data?.length || 0)
+      setTotalPages(Math.ceil((data?.length || 0) / 20))
     } catch (error) {
+      console.error('Error fetching categories:', error)
       toast({
         title: "Error",
         description: "Failed to fetch categories",
@@ -135,6 +142,12 @@ export function CategoriesManagement() {
     category.slug.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // Client-side pagination
+  const startIndex = (currentPage - 1) * 20
+  const endIndex = startIndex + 20
+  const paginatedCategories = filteredCategories.slice(startIndex, endIndex)
+  const totalFilteredPages = Math.ceil(filteredCategories.length / 20)
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -149,21 +162,22 @@ export function CategoriesManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Categories Management</h2>
-          <p className="text-muted-foreground">Manage product categories and their organization</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Categories Management</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage product categories and their organization</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button onClick={fetchCategories} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Category
+                <span className="hidden sm:inline">Add Category</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -223,7 +237,7 @@ export function CategoriesManagement() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Tag className="h-5 w-5" />
-            <span>Categories ({filteredCategories.length})</span>
+            <span>Categories ({totalItems} total)</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -232,7 +246,7 @@ export function CategoriesManagement() {
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
               <span className="ml-2 text-muted-foreground">Loading categories...</span>
             </div>
-          ) : filteredCategories.length === 0 ? (
+          ) : paginatedCategories.length === 0 ? (
             <div className="text-center py-8">
               <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">No categories found</h3>
@@ -247,23 +261,24 @@ export function CategoriesManagement() {
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>ID</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.map((category) => (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead className="hidden sm:table-cell">ID</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                {paginatedCategories.map((category) => (
                   <TableRow key={category.ID}>
                     <TableCell className="font-medium">{category.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{category.slug}</Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-sm text-muted-foreground">
+                    <TableCell className="hidden sm:table-cell font-mono text-sm text-muted-foreground">
                       {category.ID.slice(0, 8)}...
                     </TableCell>
                     <TableCell className="text-right">
@@ -305,7 +320,8 @@ export function CategoriesManagement() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -346,6 +362,15 @@ export function CategoriesManagement() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Pagination */}
+      {totalFilteredPages > 1 && (
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalFilteredPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

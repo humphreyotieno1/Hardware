@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
 import { ProductFormDialog } from "./product-form-dialog"
 import { ProductViewDialog } from "./product-view-dialog"
+import { SimplePagination } from "@/components/ui/pagination"
 import { 
   Package, 
   Search, 
@@ -29,21 +30,28 @@ export function ProductsManagement() {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const { toast } = useToast()
 
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const response = await adminApi.getProducts({
-        page: currentPage,
-        limit: 20,
-        q: searchQuery || undefined,
-        sort: 'created_at',
-        order: 'desc'
-      })
+      const [productsResponse, inventoryReport] = await Promise.all([
+        adminApi.getProducts({
+          page: currentPage,
+          limit: 20,
+          q: searchQuery || undefined,
+          sort: 'created_at',
+          order: 'desc'
+        }),
+        adminApi.getInventoryReport()
+      ])
       
-      setProducts(response.products || [])
-      setTotalPages(Math.ceil((response.total || 0) / 20))
+      setProducts(productsResponse.products || [])
+      // Use inventory report total_products as the authoritative source
+      const totalCount = inventoryReport?.total_products || productsResponse.total || (productsResponse.products?.length || 0)
+      setTotalItems(totalCount)
+      setTotalPages(Math.ceil(totalCount / 20))
     } catch (error) {
       console.error("Error loading products:", error)
       toast({
@@ -168,7 +176,7 @@ export function ProductsManagement() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Package className="h-5 w-5" />
-            <span>Products ({products.length})</span>
+            <span>Products ({totalItems} total)</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -297,27 +305,11 @@ export function ProductsManagement() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
     </div>
   )

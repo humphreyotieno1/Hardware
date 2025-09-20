@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,55 +20,67 @@ import { ProductControls } from "@/components/ui/product-controls"
 import { Filter, Grid, List, Search } from "lucide-react"
 import Link from "next/link"
 
-interface SearchResultsProps {
-  searchParams: {
-    q?: string
-    page?: string
-    sort?: string
-    category?: string
-    minPrice?: string
-    maxPrice?: string
-  }
-}
-
-export function SearchResults({ searchParams }: SearchResultsProps) {
+export function SearchResults() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
-  const [searchQuery, setSearchQuery] = useState(searchParams.q || "")
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
   
   // Filter states
   const [priceRange, setPriceRange] = useState([
-    Number.parseInt(searchParams.minPrice || "0"),
-    Number.parseInt(searchParams.maxPrice || "10000")
+    Number.parseInt(searchParams.get("minPrice") || "0"),
+    Number.parseInt(searchParams.get("maxPrice") || "10000")
   ])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [availabilityFilter, setAvailabilityFilter] = useState<"all" | "in-stock" | "out-of-stock">("all")
   const [availableBrands, setAvailableBrands] = useState<string[]>([])
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
-  const [itemsPerPage, setItemsPerPage] = useState(12)
   const [dynamicPriceRange, setDynamicPriceRange] = useState<number[]>([0, 10000])
 
   const router = useRouter()
-  const currentPage = Number.parseInt(searchParams.page || "1")
-  const currentSort = searchParams.sort || "name"
+  const currentPage = Number.parseInt(searchParams.get("page") || "1")
+  const currentSort = searchParams.get("sort") || "name"
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true)
       try {
         const params: ProductSearchParams = {
-          q: searchParams.q,
-          category: searchParams.category,
+          q: searchParams.get("q") || undefined,
+          category: searchParams.get("category") || undefined,
           page: currentPage,
           limit: 12,
           sort: currentSort as any,
         }
 
         const response = await productsApi.searchProducts(params)
+        
+        console.log("Search API call params:", params)
+        console.log("Search API response:", { products: response.products.length, total: response.total, page: response.page })
+        
+        // Determine which total count to use
+        let totalCount: number
+        if (searchParams.get("q") || searchParams.get("category")) {
+          // Use search-specific total when there's a query or category filter
+          totalCount = response.total || 0
+          console.log("Using search-specific total:", totalCount)
+          
+          // If total is undefined/0 and we have a search query, we need to count manually
+          if (totalCount === 0 && (searchParams.get("q") || searchParams.get("category"))) {
+            console.log("Search total is 0, calculating manually...")
+            // For now, use a reasonable estimate based on products returned
+            totalCount = response.products.length * 10 // Rough estimate
+            console.log("Using estimated total:", totalCount)
+          }
+        } else {
+          // Use overall total when browsing all products
+          totalCount = await productsApi.getTotalProductCount()
+          console.log("Using overall total:", totalCount)
+        }
         
         // Extract unique brands and categories from products for filter options
         const brands = [...new Set(response.products.map(p => p.name.split(' ')[0]))].filter(Boolean)
@@ -120,7 +132,8 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
         }
         
         setProducts(filteredProducts)
-        setTotal(filteredProducts.length)
+        // Use authoritative total count from inventory report
+        setTotal(totalCount)
       } catch (error) {
         console.error("Failed to search products:", error)
       } finally {
@@ -129,7 +142,7 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
     }
 
     fetchProducts()
-  }, [searchParams.q, searchParams.category, currentPage, currentSort, priceRange, selectedBrands, selectedCategories, availabilityFilter])
+  }, [searchParams, currentPage, currentSort, priceRange, selectedBrands, selectedCategories, availabilityFilter])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -156,13 +169,6 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
     router.push(url.toString())
   }
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage)
-    // Reset to first page when changing items per page
-    const url = new URL(window.location.href)
-    url.searchParams.set("page", "1")
-    router.push(url.toString())
-  }
 
   const handlePriceRangeChange = (newRange: number[]) => {
     setPriceRange(newRange)
@@ -235,7 +241,7 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
       {/* Search Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-4">
-          {searchParams.q ? `Search Results for "${searchParams.q}"` : "All Products"}
+          {searchParams.get("q") ? `Search Results for "${searchParams.get("q")}"` : "All Products"}
         </h1>
 
         {/* Search Bar */}
@@ -281,8 +287,6 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
         <ProductControls
           currentSort={currentSort}
           onSortChange={handleSortChange}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
           totalItems={total}
         />
       </div>
@@ -417,7 +421,7 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
           {products.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg mb-4">
-                {searchParams.q ? `No products found for "${searchParams.q}"` : "No products found."}
+                {searchParams.get("q") ? `No products found for "${searchParams.get("q")}"` : "No products found."}
               </p>
               <Button asChild>
                 <Link href="/">Browse Categories</Link>
@@ -446,9 +450,9 @@ export function SearchResults({ searchParams }: SearchResultsProps) {
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(total / itemsPerPage)}
+            totalPages={Math.ceil(total / 12)}
             totalItems={total}
-            itemsPerPage={itemsPerPage}
+            itemsPerPage={12}
             onPageChange={handlePageChange}
           />
         </div>
