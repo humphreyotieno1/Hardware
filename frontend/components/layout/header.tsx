@@ -94,14 +94,14 @@ export function Header() {
       clearTimeout(hoverTimeout)
       setHoverTimeout(null)
     }
-    console.log('Hovering over category:', categorySlug)
+    // console.log('Hovering over category:', categorySlug)
     setHoveredCategory(categorySlug)
   }
 
   const handleCategoryLeave = () => {
     // Set a timeout to close the flyout after a delay
     const timeout = setTimeout(() => {
-      console.log('Leaving category after delay')
+      // console.log('Leaving category after delay')
       setHoveredCategory(null)
     }, 150) // 150ms delay
     setHoverTimeout(timeout)

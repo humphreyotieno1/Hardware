@@ -59,27 +59,20 @@ export function SearchResults() {
 
         const response = await productsApi.searchProducts(params)
         
-        console.log("Search API call params:", params)
-        console.log("Search API response:", { products: response.products.length, total: response.total, page: response.page })
-        
         // Determine which total count to use
         let totalCount: number
         if (searchParams.get("q") || searchParams.get("category")) {
           // Use search-specific total when there's a query or category filter
           totalCount = response.total || 0
-          console.log("Using search-specific total:", totalCount)
           
-          // If total is undefined/0 and we have a search query, we need to count manually
+          // If total is undefined/0 and we have a search query, use the actual products count
           if (totalCount === 0 && (searchParams.get("q") || searchParams.get("category"))) {
-            console.log("Search total is 0, calculating manually...")
-            // For now, use a reasonable estimate based on products returned
-            totalCount = response.products.length * 10 // Rough estimate
-            console.log("Using estimated total:", totalCount)
+            // Use actual count of products returned instead of arbitrary multiplier
+            totalCount = response.products.length
           }
         } else {
           // Use overall total when browsing all products
           totalCount = await productsApi.getTotalProductCount()
-          console.log("Using overall total:", totalCount)
         }
         
         // Extract unique brands and categories from products for filter options
@@ -135,7 +128,9 @@ export function SearchResults() {
         // Use authoritative total count from inventory report
         setTotal(totalCount)
       } catch (error) {
-        console.error("Failed to search products:", error)
+        // Handle error silently or with proper error handling
+        setProducts([])
+        setTotal(0)
       } finally {
         setLoading(false)
       }
