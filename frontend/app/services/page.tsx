@@ -15,9 +15,11 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mt-10">
+      <main className="container mx-auto px-4 py-8">
         <ServicesContent />
-        <NewsletterSignup />
+        <div className="mt-16">
+          <NewsletterSignup />
+        </div>
       </main>
       <Footer />
     </div>

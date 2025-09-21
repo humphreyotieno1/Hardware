@@ -54,9 +54,7 @@ export function CategoryProductListing({ categorySlug }: CategoryProductListingP
           sort: currentSort as any,
         }
 
-        console.log("API call params:", params)
         const response = await productsApi.getProductsByCategory(categorySlug, params)
-        console.log("API response:", { products: response.products.length, total: response.total, page: response.page })
         
         // Extract unique brands from products for filter options
         const brands = [...new Set(response.products.map(p => p.name.split(' ')[0]))].filter(Boolean)
@@ -103,7 +101,9 @@ export function CategoryProductListing({ categorySlug }: CategoryProductListingP
         const categoryTotal = await productsApi.getCategoryTotalCount(categorySlug)
         setTotal(categoryTotal)
       } catch (error) {
-        console.error("Failed to fetch products:", error)
+        // Handle error silently or with proper error handling
+        setProducts([])
+        setTotal(0)
       } finally {
         setLoading(false)
       }

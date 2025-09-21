@@ -229,14 +229,13 @@ export function ReportsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">
                       {inventoryReport ? inventoryReport.total_products : 'N/A'}
                     </div>
                     <div className="text-sm text-muted-foreground">Total Products</div>
                   </div>
-                  <br />
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">
                       {inventoryReport ? formatPrice(inventoryReport.total_inventory_value) : 'N/A'}

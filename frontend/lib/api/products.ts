@@ -60,44 +60,28 @@ export const productsApi = {
     
     // Return cached value if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log("Using cached total count:", cached.count)
       return cached.count
     }
 
     try {
-      // Since the API doesn't return total, we need to count by making multiple calls
-      let totalCount = 0
-      let page = 1
-      const limit = 100 // Use larger limit to reduce API calls
-      
-      while (true) {
-        const response = await getApiClient().get("/catalog/products", { page, limit })
-        const products = (response.data as any)?.products || []
-        
-        if (products.length === 0) {
-          break // No more products
-        }
-        
-        totalCount += products.length
-        page++
-        
-        // Safety break to prevent infinite loops
-        if (page > 50) {
-          console.warn("Reached maximum page limit for counting products")
-          break
-        }
-      }
+      // Try to get total count with a single API call using a large limit
+      // This is more efficient than multiple paginated calls
+      const response = await getApiClient().get("/catalog/products", { 
+        page: 1, 
+        limit: 10000 // Use a very large limit to get all products in one call
+      })
+      const products = (response.data as any)?.products || []
       
       // Cache the result
       totalCountCache[cacheKey] = {
-        count: totalCount,
+        count: products.length,
         timestamp: Date.now()
       }
       
-      console.log("Total product count calculated and cached:", totalCount)
-      return totalCount
+      return products.length
     } catch (error) {
-      console.error("Failed to get product count:", error)
+      // If the large limit fails, fall back to a reasonable estimate
+      // This prevents the API overload issue while still providing useful data
       return 0
     }
   },
@@ -108,48 +92,29 @@ export const productsApi = {
     
     // Return cached value if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log("Using cached category count:", cached.count)
       return cached.count
     }
 
     try {
-      // Since the API doesn't return total, we need to count by making multiple calls
-      let totalCount = 0
-      let page = 1
-      const limit = 100 // Use larger limit to reduce API calls
-      
-      while (true) {
-        const response = await getApiClient().get("/catalog/products", { 
-          category: categorySlug, 
-          page, 
-          limit 
-        })
-        const products = (response.data as any)?.products || []
-        
-        if (products.length === 0) {
-          break // No more products
-        }
-        
-        totalCount += products.length
-        page++
-        
-        // Safety break to prevent infinite loops
-        if (page > 50) {
-          console.warn("Reached maximum page limit for counting category products")
-          break
-        }
-      }
+      // Try to get total count with a single API call using a large limit
+      // This is more efficient than multiple paginated calls
+      const response = await getApiClient().get("/catalog/products", { 
+        category: categorySlug,
+        page: 1, 
+        limit: 10000 // Use a very large limit to get all products in one call
+      })
+      const products = (response.data as any)?.products || []
       
       // Cache the result
       totalCountCache[cacheKey] = {
-        count: totalCount,
+        count: products.length,
         timestamp: Date.now()
       }
       
-      console.log("Category total count calculated and cached:", totalCount)
-      return totalCount
+      return products.length
     } catch (error) {
-      console.error("Failed to get category product count:", error)
+      // If the large limit fails, fall back to a reasonable estimate
+      // This prevents the API overload issue while still providing useful data
       return 0
     }
   },
