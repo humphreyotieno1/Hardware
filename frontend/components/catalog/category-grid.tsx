@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { productsApi } from "@/lib/api/products"
-import type { Category, Product } from "@/lib/api/types"
+import type { Category } from "@/lib/api/types"
 
 interface CategoryWithCount extends Category {
   productCount: number
@@ -135,47 +135,26 @@ export function CategoryGrid() {
         // Get all categories from API
         const categories = await productsApi.getCategories()
         
-        // Get product counts for each category
-        const categoriesWithCounts = await Promise.all(
-          categories.map(async (category) => {
-            try {
-              const result = await productsApi.getProductsByCategory(category.slug, { limit: 1 })
-              const categoryInfo = categoryData.find(c => c.slug === category.slug)
-              
-              return {
-                ...category,
-                productCount: result.total,
-                ...(categoryInfo || {
-                  icon: Wrench,
-                  description: "Various products and supplies",
-                  color: "text-gray-600",
-                  bgColor: "bg-gray-50",
-                  priceRange: "From KES 100",
-                  popular: false,
-                  discount: "Quality products",
-                  backgroundImage: "/images/hero/tools.jpg"
-                })
-              } as CategoryWithCount
-            } catch (error) {
-              console.error(`Error fetching products for category ${category.slug}:`, error)
-              const categoryInfo = categoryData.find(c => c.slug === category.slug)
-              return {
-                ...category,
-                productCount: 0,
-                ...(categoryInfo || {
-                  icon: Wrench,
-                  description: "Various products and supplies",
-                  color: "text-gray-600",
-                  bgColor: "bg-gray-50",
-                  priceRange: "From KES 100",
-                  popular: false,
-                  discount: "Quality products",
-                  backgroundImage: "/images/hero/tools.jpg"
-                })
-              } as CategoryWithCount
-            }
-          })
-        )
+        // Get product counts for each category using frontend aggregation
+        const categoryCounts = await productsApi.getCategoryCounts()
+
+        const categoriesWithCounts = categories.map((category) => {
+          const categoryInfo = categoryData.find(c => c.slug === category.slug)
+          return {
+            ...category,
+            productCount: categoryCounts[category.slug] ?? 0,
+            ...(categoryInfo || {
+              icon: Wrench,
+              description: "Various products and supplies",
+              color: "text-gray-600",
+              bgColor: "bg-gray-50",
+              priceRange: "From KES 100",
+              popular: false,
+              discount: "Quality products",
+              backgroundImage: "/images/hero/tools.jpg"
+            })
+          } as CategoryWithCount
+        })
         
         setCategoriesWithCounts(categoriesWithCounts)
       } catch (error) {
@@ -296,11 +275,6 @@ export function CategoryGrid() {
                               <Package className="h-3 w-3 mr-1" />
                               {category.productCount} {category.productCount === 1 ? 'product' : 'products'}
                             </Badge>
-                          </div>
-                          
-                          {/* Price Range */}
-                          <div className="text-xs font-semibold text-foreground mb-1">
-                            {category.priceRange}
                           </div>
                           
                           {/* Discount/Feature */}

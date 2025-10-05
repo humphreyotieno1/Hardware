@@ -1,9 +1,54 @@
 import { getApiClient } from "./client"
 import type { Product, Category, ProductSearchParams } from "./types"
 
+// Cache entries share a timestamped structure
+interface CacheEntry<T> {
+  value: T
+  timestamp: number
+}
+
 // Cache for total counts to avoid repeated API calls
-const totalCountCache: { [key: string]: { count: number; timestamp: number } } = {}
+const totalCountCache: Record<string, CacheEntry<number>> = {}
+let categoryCountCache: CacheEntry<Record<string, number>> | null = null
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+const isCacheValid = <T>(entry: CacheEntry<T> | null | undefined) =>
+  !!entry && Date.now() - entry.timestamp < CACHE_DURATION
+
+const computeCategoryKey = (product: any): string | undefined => {
+  if (!product) return undefined
+  if (product.category?.slug) return product.category.slug
+  if (product.category_slug) return product.category_slug
+  if (typeof product.category === "string") return product.category
+  if (product.category_id) return String(product.category_id)
+  return undefined
+}
+
+const buildCategoryCounts = (products: any[]): Record<string, number> => {
+  return products.reduce<Record<string, number>>((acc, product) => {
+    const categoryKey = computeCategoryKey(product)
+    if (!categoryKey) {
+      return acc
+    }
+    acc[categoryKey] = (acc[categoryKey] || 0) + 1
+    return acc
+  }, {})
+}
+
+const fetchCategoryCounts = async (): Promise<Record<string, number>> => {
+  try {
+    const response = await getApiClient().get("/catalog/products", {
+      page: 1,
+      limit: 10000,
+    })
+    const payload = response.data as any
+    const products = payload?.products || []
+    return buildCategoryCounts(products)
+  } catch (error) {
+    console.error("Error fetching category counts:", error)
+    return {}
+  }
+}
 
 export const productsApi = {
   async getCategories(): Promise<Category[]> {
@@ -57,28 +102,21 @@ export const productsApi = {
   async getTotalProductCount(): Promise<number> {
     const cacheKey = 'all-products'
     const cached = totalCountCache[cacheKey]
-    
+
     // Return cached value if still valid
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.count
+    if (isCacheValid(cached)) {
+      return cached.value
     }
 
     try {
-      // Try to get total count with a single API call using a large limit
-      // This is more efficient than multiple paginated calls
-      const response = await getApiClient().get("/catalog/products", { 
-        page: 1, 
-        limit: 10000 // Use a very large limit to get all products in one call
-      })
-      const products = (response.data as any)?.products || []
-      
-      // Cache the result
+      const counts = await productsApi.getCategoryCounts()
+      const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
+
       totalCountCache[cacheKey] = {
-        count: products.length,
-        timestamp: Date.now()
+        value: total,
+        timestamp: Date.now(),
       }
-      
-      return products.length
+      return total
     } catch (error) {
       // If the large limit fails, fall back to a reasonable estimate
       // This prevents the API overload issue while still providing useful data
@@ -89,34 +127,38 @@ export const productsApi = {
   async getCategoryTotalCount(categorySlug: string): Promise<number> {
     const cacheKey = `category-${categorySlug}`
     const cached = totalCountCache[cacheKey]
-    
-    // Return cached value if still valid
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.count
+
+    if (isCacheValid(cached)) {
+      return cached.value
     }
 
     try {
-      // Try to get total count with a single API call using a large limit
-      // This is more efficient than multiple paginated calls
-      const response = await getApiClient().get("/catalog/products", { 
-        category: categorySlug,
-        page: 1, 
-        limit: 10000 // Use a very large limit to get all products in one call
-      })
-      const products = (response.data as any)?.products || []
-      
-      // Cache the result
+      const counts = await productsApi.getCategoryCounts()
+      const count = counts[categorySlug] ?? 0
+
       totalCountCache[cacheKey] = {
-        count: products.length,
-        timestamp: Date.now()
+        value: count,
+        timestamp: Date.now(),
       }
-      
-      return products.length
+      return count
     } catch (error) {
       // If the large limit fails, fall back to a reasonable estimate
       // This prevents the API overload issue while still providing useful data
       return 0
     }
+  },
+
+  async getCategoryCounts(): Promise<Record<string, number>> {
+    if (isCacheValid(categoryCountCache)) {
+      return categoryCountCache!.value
+    }
+
+    const counts = await fetchCategoryCounts()
+    categoryCountCache = {
+      value: counts,
+      timestamp: Date.now(),
+    }
+    return counts
   },
 
 }

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { ExternalLink } from "lucide-react"
 
@@ -43,51 +42,6 @@ const partners = [
 ]
 
 export function PartnersSection() {
-  const [isHovered, setIsHovered] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const animationRef = useRef<number>()
-  const itemWidthRef = useRef<number>(0)
-
-  useEffect(() => {
-    const animate = () => {
-      if (!isHovered && scrollRef.current) {
-        const currentScroll = scrollRef.current.scrollLeft
-        const itemWidth = itemWidthRef.current
-        
-        if (itemWidth > 0) {
-          const newScroll = currentScroll + 1.5
-          const totalWidth = partners.length * itemWidth
-          
-          // Reset to beginning when we've scrolled through all partners
-          if (newScroll >= totalWidth) {
-            scrollRef.current.scrollLeft = 0
-          } else {
-            scrollRef.current.scrollLeft = newScroll
-          }
-        }
-      }
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    animationRef.current = requestAnimationFrame(animate)
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
-  }, [isHovered])
-
-  // Calculate item width after component mounts
-  useEffect(() => {
-    if (scrollRef.current) {
-      const firstItem = scrollRef.current.querySelector('[data-partner-item]') as HTMLElement
-      if (firstItem) {
-        itemWidthRef.current = firstItem.offsetWidth + 24 // 24px for spacing
-      }
-    }
-  }, [])
-
   const handlePartnerClick = (partner: typeof partners[0]) => {
     console.log(`Partner clicked: ${partner.name}`)
   }
@@ -108,70 +62,63 @@ export function PartnersSection() {
         </div>
 
         {/* Partners Scroll Container */}
-        <div
-          className="relative overflow-hidden"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
+        <div className="relative overflow-hidden">
           {/* Gradient Overlays for Smooth Edges */}
           <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 lg:w-16 bg-gradient-to-r from-muted/30 to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 lg:w-16 bg-gradient-to-l from-muted/30 to-transparent z-10 pointer-events-none" />
 
           {/* Scrollable Partners */}
           <div
-            ref={scrollRef}
-            className="flex justify-center space-x-6 sm:space-x-8 md:space-x-10 lg:space-x-12 py-4 sm:py-6"
-            style={{
-              scrollBehavior: isHovered ? 'smooth' : 'auto'
-            }}
+            className="flex justify-center items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 py-4 sm:py-6 overflow-x-auto snap-x snap-mandatory scroll-smooth"
+            role="list"
+            aria-label="Partners logos"
           >
             {/* Partners */}
-            {partners.map((partner, index) => (
+            {partners.map(partner => (
               <div
-                key={`${partner.id}-${index}`}
+                key={partner.id}
                 data-partner-item
-                className="animate-fade-in-up hover:scale-105 transition-all duration-200 flex-shrink-0"
-                style={{ animationDelay: `${index * 30}ms` }}
+                className="animate-fade-in-up hover:scale-105 transition-all duration-200 flex-shrink-0 snap-start"
               >
                 <Link
                   href={partner.url}
                   onClick={() => handlePartnerClick(partner)}
                   className="group block"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={`Visit ${partner.name} partner page`}
                 >
-                  <div className="bg-white rounded-full p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300 border border-border/50 hover:border-primary/30">
-                    {/* Logo Container - Smaller and Rounded */}
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
-                      {partner.logo ? (
-                        <img
-                          src={partner.logo}
-                          alt={`${partner.name} logo`}
-                          className="w-full h-full object-contain filter group-hover:grayscale-0 transition-all duration-300 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
-                          <span className="text-xs sm:text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                            {partner.fallback}
-                          </span>
-                        </div>
-                      )}
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="bg-white rounded-full p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300 border border-border/50 hover:border-primary/30">
+                      {/* Logo Container - Smaller and Rounded */}
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center">
+                        {partner.logo ? (
+                          <img
+                            src={partner.logo}
+                            alt={`${partner.name} logo`}
+                            className="w-full h-full object-contain filter group-hover:grayscale-0 transition-all duration-300 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
+                            <span className="text-xs sm:text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                              {partner.fallback}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <span className="text-sm sm:text-base font-medium text-foreground/90 group-hover:text-primary transition-colors">
+                      {partner.name}
+                    </span>
                   </div>
                 </Link>
               </div>
             ))}
           </div>
-
-          {/* Hover Indicator */}
-          {isHovered && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none animate-fade-in">
-              <span className="text-xs font-medium">Scroll paused</span>
-            </div>
-          )}
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-6 sm:mt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+        {/* <div className="text-center mt-6 sm:mt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
           <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             Interested in partnering with us? Let's work together.
           </p>
@@ -182,7 +129,7 @@ export function PartnersSection() {
             View All Partners
             <ExternalLink className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   )
