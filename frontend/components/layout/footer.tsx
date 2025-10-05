@@ -32,14 +32,14 @@ export function Footer() {
 
   // WhatsApp and Call functions
   const openWhatsApp = () => {
-    const phoneNumber = "254700000000" // Replace with actual phone number
+    const phoneNumber = "254720911762" // Replace with actual phone number
     const message = "Hello! I'm interested in your hardware products."
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     window.open(url, '_blank')
   }
 
   const makeCall = () => {
-    window.location.href = "tel:+254700000000" // Replace with actual phone number
+    window.location.href = "tel:+254720911762" // Replace with actual phone number
   }
 
   return (
@@ -146,11 +146,11 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">+254 700 000 000</span>
+                <span className="text-muted-foreground">+254 720 911 762</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">geocelenterprises20@gmail.com</span>
+                <span className="text-muted-foreground">grahadventureslimited@gmail.com</span>
               </div>
             </div>
           </div>

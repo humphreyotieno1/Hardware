@@ -148,12 +148,12 @@ export function Header() {
             <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
               <div className="flex items-center space-x-1">
                 <Phone className="h-3 w-3" />
-                <span className="hidden sm:inline">+254 700 000 000</span>
-                <span className="sm:hidden">+254 700 000 000</span>
+                <span className="hidden sm:inline">+254 720 911 762</span>
+                <span className="sm:hidden">+254 720 911 762</span>
               </div>
               <div className="hidden md:flex items-center space-x-2">
                 <Mail className="h-3 w-3" />
-                <span>geocelenterprises20@gmail.com</span>
+                <span>grahadventureslimited@gmail.com</span>
               </div>
               <div className="hidden lg:flex items-center space-x-2">
                 <MapPin className="h-3 w-3" />
