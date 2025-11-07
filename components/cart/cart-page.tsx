@@ -73,7 +73,7 @@ export function CartPage() {
   }
 
   const subtotal = total
-  const shipping = subtotal >= 5000 ? 0 : 500 // Free shipping over KES 5,000
+  const shipping = subtotal >= 5000 ? 0 : 2 // Free shipping over KES 5,000
   const tax = subtotal * 0.16 // 16% VAT
   const finalTotal = subtotal + shipping + tax
 
