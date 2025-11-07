@@ -94,10 +94,10 @@ export function CheckoutPage() {
       })
 
       // Step 2: Initiate payment if payment method is Paystack/Card
-      if (paymentMethod === "paystack" || paymentMethod === "card") {
+      if (paymentMethod === "paystack" || paymentMethod === "mpesa") {
         const paymentResponse = await paymentsApi.initiatePayment({
           order_id: orderResponse.order_id,
-          payment_method: paymentMethod === "card" ? "paystack" : paymentMethod,
+          payment_method: paymentMethod,
           amount: orderResponse.total,
         })
 
