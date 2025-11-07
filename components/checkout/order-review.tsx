@@ -28,8 +28,8 @@ export function OrderReview({
   const { cart, total } = useCart()
 
   const subtotal = total
-  const shipping = subtotal >= 5000 ? 0 : 500
-  const serviceCharge = serviceRequest ? 1000 : 0
+  const shipping = subtotal >= 5000 ? 0 : 2
+  const serviceCharge = serviceRequest ? 3 : 0
   const tax = (subtotal + serviceCharge) * 0.16
   const finalTotal = subtotal + shipping + serviceCharge + tax
 
