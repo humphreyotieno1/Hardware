@@ -143,112 +143,115 @@ export const ProductCard = memo(function ProductCard({
   }
 
   return (
-    <Card className={`group hover-lift hover:shadow-2xl transition-all duration-500 h-full flex flex-col border-border/50 overflow-hidden ${className}`}>
-      <CardContent className="p-0 flex flex-col h-full">
-        {/* Image Section */}
-        <div className="relative">
-          <div className="aspect-[4/5] bg-muted overflow-hidden relative">
+    <div className={`group relative h-full ${className}`}>
+      <div className="h-full bg-background border border-border/40 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-border/80 hover:-translate-y-1">
+        {/* Image Section with overlay */}
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          <Link href={`/products/${product.slug}`} className="block w-full h-full">
             {product.images_json && product.images_json.length > 0 ? (
               <Image
                 src={product.images_json[0] || "/placeholder.svg"}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                 No Image
               </div>
             )}
-          </div>
+          </Link>
 
-          {/* Wishlist Button - Independent click */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`absolute top-1.5 right-1.5 h-7 w-7 p-0 bg-background/80 hover:bg-background ${isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
-              }`}
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+          {/* Wishlist Button - Top right with independent hover */}
+          <button
             onClick={handleWishlistToggle}
             disabled={loading.wishlist}
+            className={`absolute top-3 right-3 z-10 h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200 ${isInWishlist
+                ? 'bg-red-500 text-white shadow-lg'
+                : 'bg-white/90 text-muted-foreground hover:bg-red-500 hover:text-white hover:scale-110 shadow-md'
+              }`}
           >
             {loading.wishlist ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : isInWishlist ? (
-              <Heart className="h-3.5 w-3.5 fill-current" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Heart className="h-3.5 w-3.5" />
+              <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`} />
             )}
-          </Button>
+          </button>
 
-          {/* Stock Badge */}
-          {product.stock_quantity > 0 && (
-            <Badge variant="default" className="absolute top-1.5 left-1.5 bg-green-600 hover:bg-green-700 text-xs px-1.5 py-0.5">
-              In Stock
-            </Badge>
-          )}
-          {product.stock_quantity === 0 && (
-            <Badge variant="secondary" className="absolute top-1.5 left-1.5 text-xs px-1.5 py-0.5">
-              Out of Stock
-            </Badge>
-          )}
+          {/* Stock Badge - Top left */}
+          <div className="absolute top-3 left-3 z-10">
+            {product.stock_quantity > 0 ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500 text-white shadow-sm">
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                Out of Stock
+              </span>
+            )}
+          </div>
+
+          {/* Quick Add Button - Appears on hover at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+            <button
+              onClick={handleAddToCart}
+              disabled={product.stock_quantity === 0 || loading.cart}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            >
+              {loading.cart ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="h-4 w-4" />
+                  {product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Content Section */}
-        <div className="space-y-2 flex-1 flex flex-col">
+        <div className="p-4 space-y-2">
+          {/* Category Tag */}
+          {showCategory && product.category && (
+            <span className="inline-block text-xs font-medium text-primary/80 uppercase tracking-wide">
+              {product.category.name}
+            </span>
+          )}
+
           {/* Product Name - Clickable */}
-          <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2 text-sm leading-tight">
+          <Link href={`/products/${product.slug}`} className="block group/title">
+            <h3 className="font-semibold text-foreground leading-snug line-clamp-2 group-hover/title:text-primary transition-colors duration-200">
               {product.name}
             </h3>
           </Link>
 
-          {/* SKU */}
-          <div className="text-xs text-muted-foreground">
-            SKU: {product.sku}
-          </div>
-
-          {/* Description */}
-          <p className="text-xs text-muted-foreground line-clamp-1 flex-1">
-            {product.description}
-          </p>
-
-          {/* Category */}
-          {showCategory && product.category && (
-            <div className="text-xs text-primary font-medium">
-              {product.category.name}
+          {/* Rating */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              ))}
             </div>
-          )}
-
-          {/* Star Ratings */}
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            ))}
-            <span className="text-xs text-muted-foreground ml-1">(5.0)</span>
+            <span className="text-xs text-muted-foreground">(5.0)</span>
           </div>
 
           {/* Price */}
-          <div className="text-base font-bold text-foreground">
-            {formatPrice(product.price)}
+          <div className="flex items-baseline gap-2 pt-1">
+            <span className="text-lg font-bold text-foreground">
+              {formatPrice(product.price)}
+            </span>
           </div>
-
-          {/* Add to Cart Button - Independent click */}
-          <Button
-            className="w-full mt-auto text-sm py-2"
-            disabled={product.stock_quantity === 0 || loading.cart}
-            onClick={handleAddToCart}
-          >
-            {loading.cart ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
-            )}
-            {loading.cart ? "Adding..." : product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
-          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 })

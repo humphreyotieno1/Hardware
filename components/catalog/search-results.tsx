@@ -15,6 +15,7 @@ import { productsApi, formatPrice } from "@/lib/api"
 import type { Product, ProductSearchParams } from "@/lib/api/types"
 import { ProductCard } from "@/components/ui/product-card"
 import { ProductListCard } from "@/components/ui/product-list-card"
+import { ProductGridSkeleton } from "@/components/ui/product-card-skeleton"
 import { Pagination } from "@/components/ui/pagination"
 import { ProductControls } from "@/components/ui/product-controls"
 import { Filter, Grid, List, Search } from "lucide-react"
@@ -28,7 +29,7 @@ export function SearchResults() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
-  
+
   // Filter states
   const [priceRange, setPriceRange] = useState([
     Number.parseInt(searchParams.get("minPrice") || "0"),
@@ -58,13 +59,13 @@ export function SearchResults() {
         }
 
         const response = await productsApi.searchProducts(params)
-        
+
         // Determine which total count to use
         let totalCount: number
         if (searchParams.get("q") || searchParams.get("category")) {
           // Use search-specific total when there's a query or category filter
           totalCount = response.total || 0
-          
+
           // If total is undefined/0 and we have a search query, use the actual products count
           if (totalCount === 0 && (searchParams.get("q") || searchParams.get("category"))) {
             // Use actual count of products returned instead of arbitrary multiplier
@@ -74,56 +75,56 @@ export function SearchResults() {
           // Use overall total when browsing all products
           totalCount = await productsApi.getTotalProductCount()
         }
-        
+
         // Extract unique brands and categories from products for filter options
         const brands = [...new Set(response.products.map(p => p.name.split(' ')[0]))].filter(Boolean)
         const categories = [...new Set(response.products.map(p => p.category?.name).filter(Boolean))]
-        
+
         setAvailableBrands(brands)
         setAvailableCategories(categories as string[])
-        
+
         // Calculate dynamic price range from products
         if (response.products.length > 0) {
           const prices = response.products.map(p => p.price)
           const minPrice = Math.floor(Math.min(...prices) / 100) * 100 // Round down to nearest 100
           const maxPrice = Math.ceil(Math.max(...prices) / 100) * 100 // Round up to nearest 100
           setDynamicPriceRange([minPrice, maxPrice])
-          
+
           // Update price range if it's still at default values
           if (priceRange[0] === 0 && priceRange[1] === 10000) {
             setPriceRange([minPrice, maxPrice])
           }
         }
-        
+
         // Apply client-side filters
         let filteredProducts = response.products
-        
+
         // Price filter
-        filteredProducts = filteredProducts.filter(p => 
+        filteredProducts = filteredProducts.filter(p =>
           p.price >= priceRange[0] && p.price <= priceRange[1]
         )
-        
+
         // Brand filter
         if (selectedBrands.length > 0) {
-          filteredProducts = filteredProducts.filter(p => 
+          filteredProducts = filteredProducts.filter(p =>
             selectedBrands.some(brand => p.name.toLowerCase().includes(brand.toLowerCase()))
           )
         }
-        
+
         // Category filter
         if (selectedCategories.length > 0) {
-          filteredProducts = filteredProducts.filter(p => 
+          filteredProducts = filteredProducts.filter(p =>
             p.category && selectedCategories.includes(p.category.name)
           )
         }
-        
+
         // Availability filter
         if (availabilityFilter === "in-stock") {
           filteredProducts = filteredProducts.filter(p => p.stock_quantity > 0)
         } else if (availabilityFilter === "out-of-stock") {
           filteredProducts = filteredProducts.filter(p => p.stock_quantity === 0)
         }
-        
+
         setProducts(filteredProducts)
         // Use authoritative total count from inventory report
         setTotal(totalCount)
@@ -205,28 +206,16 @@ export function SearchResults() {
     router.push(url.toString())
   }
 
-  const activeFiltersCount = (priceRange[0] > 0 || priceRange[1] < 10000 ? 1 : 0) + 
-                            selectedBrands.length + 
-                            selectedCategories.length +
-                            (availabilityFilter !== "all" ? 1 : 0)
+  const activeFiltersCount = (priceRange[0] > 0 || priceRange[1] < 10000 ? 1 : 0) +
+    selectedBrands.length +
+    selectedCategories.length +
+    (availabilityFilter !== "all" ? 1 : 0)
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-4"></div>
-                  <div className="h-4 bg-muted rounded mb-2"></div>
-                  <div className="h-4 bg-muted rounded w-2/3"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <div className="h-8 bg-muted rounded w-1/4 mb-6 animate-pulse"></div>
+        <ProductGridSkeleton count={12} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
       </div>
     )
   }
@@ -305,13 +294,13 @@ export function SearchResults() {
                 <div>
                   <Label className="text-sm font-medium">Price Range</Label>
                   <div className="mt-2">
-                    <Slider 
-                      value={priceRange} 
-                      onValueChange={handlePriceRangeChange} 
+                    <Slider
+                      value={priceRange}
+                      onValueChange={handlePriceRangeChange}
                       min={dynamicPriceRange[0]}
                       max={dynamicPriceRange[1]}
-                      step={100} 
-                      className="mb-2" 
+                      step={100}
+                      className="mb-2"
                     />
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>{formatPrice(priceRange[0])}</span>
@@ -329,9 +318,9 @@ export function SearchResults() {
                     {availableCategories.length > 0 ? (
                       availableCategories.map((category) => (
                         <label key={category} className="flex items-center space-x-2">
-                          <input 
-                            type="checkbox" 
-                            className="rounded" 
+                          <input
+                            type="checkbox"
+                            className="rounded"
                             checked={selectedCategories.includes(category)}
                             onChange={() => handleCategoryToggle(category)}
                           />
@@ -353,9 +342,9 @@ export function SearchResults() {
                     {availableBrands.length > 0 ? (
                       availableBrands.map((brand) => (
                         <label key={brand} className="flex items-center space-x-2">
-                          <input 
-                            type="checkbox" 
-                            className="rounded" 
+                          <input
+                            type="checkbox"
+                            className="rounded"
                             checked={selectedBrands.includes(brand)}
                             onChange={() => handleBrandToggle(brand)}
                           />
@@ -375,30 +364,30 @@ export function SearchResults() {
                   <Label className="text-sm font-medium">Availability</Label>
                   <div className="mt-2 space-y-2">
                     <label className="flex items-center space-x-2">
-                      <input 
-                        type="radio" 
-                        name="availability" 
-                        className="rounded" 
+                      <input
+                        type="radio"
+                        name="availability"
+                        className="rounded"
                         checked={availabilityFilter === "all"}
                         onChange={() => handleAvailabilityChange("all")}
                       />
                       <span className="text-sm">All Products</span>
                     </label>
                     <label className="flex items-center space-x-2">
-                      <input 
-                        type="radio" 
-                        name="availability" 
-                        className="rounded" 
+                      <input
+                        type="radio"
+                        name="availability"
+                        className="rounded"
                         checked={availabilityFilter === "in-stock"}
                         onChange={() => handleAvailabilityChange("in-stock")}
                       />
                       <span className="text-sm">In Stock</span>
                     </label>
                     <label className="flex items-center space-x-2">
-                      <input 
-                        type="radio" 
-                        name="availability" 
-                        className="rounded" 
+                      <input
+                        type="radio"
+                        name="availability"
+                        className="rounded"
                         checked={availabilityFilter === "out-of-stock"}
                         onChange={() => handleAvailabilityChange("out-of-stock")}
                       />
@@ -426,14 +415,14 @@ export function SearchResults() {
             <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-3"}>
               {products.map((product) => (
                 viewMode === "grid" ? (
-                  <ProductCard 
-                    key={product.ID} 
+                  <ProductCard
+                    key={product.ID}
                     product={product}
                     showCategory={true}
                   />
                 ) : (
-                  <ProductListCard 
-                    key={product.ID} 
+                  <ProductListCard
+                    key={product.ID}
                     product={product}
                     showCategory={true}
                   />

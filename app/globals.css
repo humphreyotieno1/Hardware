@@ -109,7 +109,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-montserrat);
+  --font-sans: var(--font-sen);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

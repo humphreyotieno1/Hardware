@@ -41,7 +41,7 @@ export function Header() {
       try {
         const cats = await productsApi.getCategories()
         setCategories(cats)
-        
+
         // Fetch sample products for each category for the fly-out menu
         const productsMap: Record<string, Product[]> = {}
         for (const cat of cats) { // Fetch products for all categories
@@ -176,8 +176,12 @@ export function Header() {
             {/* Logo and Company Info */}
             <div className="flex items-center space-x-3 sm:space-x-4">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm sm:text-base lg:text-lg">GV</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src="/logo.png"
+                    alt="Grahad Ventures Limited"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </Link>
               <div className="hidden sm:block">
@@ -296,7 +300,7 @@ export function Header() {
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
-                size="sm" 
+                size="sm"
                 className="lg:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
@@ -327,7 +331,7 @@ export function Header() {
       <div className="bg-card border-b shadow-sm relative">
         <div className="container mx-auto px-4 relative">
           <nav className="relative">
-            <ul className="flex items-center space-x-3 sm:space-x-4 lg:space-x-6 xl:space-x-8 overflow-x-auto scrollbar-hide py-2 sm:py-3 lg:py-4">
+            <ul className="flex items-center space-x-1 sm:space-x-2 lg:space-x-3 overflow-x-auto scrollbar-hide py-1.5 sm:py-2">
               {categories.map((category) => (
                 <li
                   key={category.slug}
@@ -338,7 +342,7 @@ export function Header() {
                 >
                   <Link
                     href={`/categories/${category.slug}`}
-                    className="flex items-center space-x-1 py-2 sm:py-3 lg:py-4 px-2 text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
+                    className="flex items-center space-x-1 py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
                   >
                     <span>{category.name}</span>
                     <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:rotate-180" />
@@ -348,12 +352,12 @@ export function Header() {
             </ul>
           </nav>
         </div>
-        
+
         {/* Fly-out Menu - Positioned outside the scrollable container */}
         {hoveredCategory && (
           <div
             className="absolute top-full left-0 w-full bg-white border shadow-lg rounded-lg p-4 sm:p-6 z-[9999]"
-            style={{ 
+            style={{
               position: 'absolute',
               top: '100%',
               left: '0',
@@ -376,7 +380,7 @@ export function Header() {
                   <p className="text-sm text-muted-foreground">Loading products...</p>
                   {categoryProducts[hoveredCategory]?.slice(0, 4).map((product: Product) => (
                     <div
-                      key={product.id}
+                      key={product.ID}
                       className="hover:translate-x-1 transition-transform duration-200"
                     >
                       <Link
@@ -483,7 +487,7 @@ export function Header() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-medium mb-2 text-sm sm:text-base">Account</h3>
                   <div className="space-y-1 sm:space-y-2">
@@ -581,7 +585,7 @@ export function Header() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="p-4 overflow-y-auto max-h-[60vh]">
                 <div className="space-y-4">
                   {/* Featured Products */}
@@ -590,7 +594,7 @@ export function Header() {
                     <div className="space-y-2">
                       {categoryProducts[selectedMobileCategory]?.slice(0, 3).map((product: Product) => (
                         <div
-                          key={product.id}
+                          key={product.ID}
                           className="flex items-center space-x-3 p-2 rounded hover:bg-muted/50 transition-colors"
                         >
                           <div className="w-12 h-12 bg-muted rounded flex items-center justify-center flex-shrink-0">

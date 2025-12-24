@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Montserrat } from "next/font/google"
+import { Sen } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/lib/hooks/use-auth"
@@ -11,9 +11,9 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthErrorBoundary } from "@/components/auth/auth-error-boundary"
 import { Suspense } from "react"
 
-const montserrat = Montserrat({
+const sen = Sen({
   subsets: ["latin"],
-  variable: "--font-montserrat",
+  variable: "--font-sen",
   display: "swap",
 })
 
@@ -52,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${montserrat.variable}`}>
+      <body className={`font-sans ${sen.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
           <QueryProvider>
             <AuthErrorBoundary>
