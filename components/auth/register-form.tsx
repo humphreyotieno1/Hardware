@@ -59,6 +59,19 @@ export function RegisterForm() {
         phone: formData.phone || undefined,
         password: formData.password,
       })
+
+      // Send welcome email (non-blocking)
+      fetch('/api/auth/welcome', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.full_name,
+          email: formData.email,
+        }),
+      }).catch(err => console.error('Failed to send welcome email:', err))
+
       // Redirect to login page after successful registration
       router.push("/auth/login")
     } catch (err) {

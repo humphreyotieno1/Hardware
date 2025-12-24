@@ -11,14 +11,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  Send, 
-  MessageSquare, 
-  HelpCircle, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Send,
+  MessageSquare,
+  HelpCircle,
   ShoppingCart,
   Truck,
   Shield,
@@ -26,24 +26,16 @@ import {
 } from "lucide-react"
 
 
-// Contact form data interface
-interface ContactFormData {
-  name: string
-  email: string
-  phone: string
-  subject: string
-  category: string
-  message: string
-}
+import { contactFormSchema, type ContactFormData } from "@/lib/validations/contact"
 
 // Contact information
 const contactInfo = {
-  phone: "+1 (555) 123-4567",
-  email: "support@hardwarestore.com",
-  address: "123 Industrial Way, Tech City, TC 12345",
+  phone: "+254796305689",
+  email: "grahadventureslimited@gmail.com",
+  address: "Siaya-Bondo Highway Opp. Siaya Prison",
   hours: {
-    weekdays: "Monday - Friday: 8:00 AM - 6:00 PM",
-    saturday: "Saturday: 9:00 AM - 4:00 PM",
+    weekdays: "Monday - Friday: 7:00 AM - 6:00 PM",
+    saturday: "Saturday: 7:00 AM - 6:00 PM",
     sunday: "Sunday: Closed"
   }
 }
@@ -62,11 +54,11 @@ const contactCategories = [
 const faqs = [
   {
     question: "What are your shipping options?",
-    answer: "We offer standard shipping (3-5 business days), expedited shipping (1-2 business days), and same-day delivery for local orders over $100."
+    answer: "We offer standard shipping, and same-day delivery for local orders."
   },
   {
     question: "Do you offer bulk discounts?",
-    answer: "Yes! We provide volume discounts for orders over $1,000. Contact our business team for custom pricing."
+    answer: "Yes! We provide volume discounts for orders over. Contact our business team for custom pricing."
   },
   {
     question: "What is your return policy?",
@@ -74,7 +66,7 @@ const faqs = [
   },
   {
     question: "Do you have a physical store?",
-    answer: "Yes, our main store is located at 123 Industrial Way, Tech City. We're open Monday-Friday 8AM-6PM and Saturday 9AM-4PM."
+    answer: "Yes, our main store is located at Siaya-Bondo Highway Opp. Siaya Prison. We're open Monday-Friday 7AM-6PM and Saturday 7AM-6PM."
   },
   {
     question: "Can I track my order?",
@@ -82,7 +74,7 @@ const faqs = [
   },
   {
     question: "Do you offer technical support?",
-    answer: "Yes, our technical support team is available Monday-Friday 8AM-6PM to help with product questions and troubleshooting."
+    answer: "Yes, our technical support team is available 24/7 to help with product questions and troubleshooting."
   }
 ]
 
@@ -95,35 +87,77 @@ export default function ContactPage() {
     category: "",
     message: ""
   })
+  const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        category: "",
-        message: ""
+    setErrors({})
+
+    // Client-side validation
+    const result = contactFormSchema.safeParse(formData)
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof ContactFormData, string>> = {}
+      result.error.issues.forEach(issue => {
+        const path = issue.path[0] as keyof ContactFormData
+        if (!fieldErrors[path]) {
+          fieldErrors[path] = issue.message
+        }
       })
-    }, 3000)
+      setErrors(fieldErrors)
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+
+      setIsSubmitted(true)
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false)
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          category: "",
+          message: ""
+        })
+      }, 3000)
+    } catch (error: any) {
+      console.error('Contact form error:', error)
+      alert(error.message || 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -196,7 +230,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="tel:+15551234567">
+                  <a href="tel:+254796305689">
                     <Phone className="h-4 w-4 mr-2" />
                     Call Now
                   </a>
@@ -242,25 +276,27 @@ export default function ContactPage() {
                     {/* Name and Email */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Full Name *</Label>
+                        <Label htmlFor="name" className={errors.name ? "text-destructive" : ""}>Full Name *</Label>
                         <Input
                           id="name"
                           value={formData.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           placeholder="Enter your full name"
-                          required
+                          className={errors.name ? "border-destructive focus-visible:ring-destructive" : ""}
                         />
+                        {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email Address *</Label>
+                        <Label htmlFor="email" className={errors.email ? "text-destructive" : ""}>Email Address *</Label>
                         <Input
                           id="email"
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
                           placeholder="Enter your email"
-                          required
+                          className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
                         />
+                        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                       </div>
                     </div>
 
@@ -277,9 +313,9 @@ export default function ContactPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="category">Category *</Label>
+                        <Label htmlFor="category" className={errors.category ? "text-destructive" : ""}>Category *</Label>
                         <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                          <SelectTrigger>
+                          <SelectTrigger className={errors.category ? "border-destructive" : ""}>
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -296,32 +332,35 @@ export default function ContactPage() {
                             })}
                           </SelectContent>
                         </Select>
+                        {errors.category && <p className="text-xs text-destructive">{errors.category}</p>}
                       </div>
                     </div>
 
                     {/* Subject */}
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Subject *</Label>
+                      <Label htmlFor="subject" className={errors.subject ? "text-destructive" : ""}>Subject *</Label>
                       <Input
                         id="subject"
                         value={formData.subject}
                         onChange={(e) => handleInputChange("subject", e.target.value)}
                         placeholder="Brief description of your inquiry"
-                        required
+                        className={errors.subject ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {errors.subject && <p className="text-xs text-destructive">{errors.subject}</p>}
                     </div>
 
                     {/* Message */}
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message *</Label>
+                      <Label htmlFor="message" className={errors.message ? "text-destructive" : ""}>Message *</Label>
                       <Textarea
                         id="message"
                         value={formData.message}
                         onChange={(e) => handleInputChange("message", e.target.value)}
                         placeholder="Please provide details about your inquiry..."
                         rows={6}
-                        required
+                        className={errors.message ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
                     </div>
 
                     {/* Submit Button */}
@@ -382,7 +421,7 @@ export default function ContactPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild>
-                  <a href="tel:+15551234567">
+                  <a href={`tel:${contactInfo.phone}`}>
                     <Phone className="h-4 w-4 mr-2" />
                     Call {contactInfo.phone}
                   </a>

@@ -22,10 +22,10 @@ interface ProductListCardProps {
   className?: string
 }
 
-export function ProductListCard({ 
-  product, 
-  onAddToCart, 
-  onAddToWishlist, 
+export function ProductListCard({
+  product,
+  onAddToCart,
+  onAddToWishlist,
   showCategory = true,
   className = ""
 }: ProductListCardProps) {
@@ -55,7 +55,7 @@ export function ProductListCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (onAddToCart) {
       onAddToCart(product.ID)
       return
@@ -74,7 +74,7 @@ export function ProductListCard({
     try {
       setLoading(prev => ({ ...prev, cart: true }))
       await addToCart(product.ID, 1)
-      
+
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,
@@ -94,7 +94,7 @@ export function ProductListCard({
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (onAddToWishlist) {
       onAddToWishlist(product.ID)
       return
@@ -112,7 +112,7 @@ export function ProductListCard({
 
     try {
       setLoading(prev => ({ ...prev, wishlist: true }))
-      
+
       if (isInWishlist && wishlistItemId) {
         // Remove from wishlist
         await removeFromWishlist(wishlistItemId)
@@ -140,6 +140,9 @@ export function ProductListCard({
     }
   }
 
+  // Use slug if available, otherwise fallback to ID
+  const productUrl = `/products/${product.slug || product.ID}`
+
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 ${className}`}>
       <CardContent className="p-4">
@@ -159,7 +162,7 @@ export function ProductListCard({
                 </div>
               )}
             </div>
-            
+
             {/* Stock Badge */}
             {product.stock_quantity > 0 && (
               <Badge variant="default" className="absolute -top-1 -right-1 bg-green-600 hover:bg-green-700 text-xs px-1 py-0.5">
@@ -178,7 +181,7 @@ export function ProductListCard({
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 {/* Product Name */}
-                <Link href={`/products/${product.slug}`} className="block">
+                <Link href={productUrl} className="block">
                   <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-1 text-sm mb-1">
                     {product.name}
                   </h3>
@@ -221,9 +224,8 @@ export function ProductListCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`h-8 w-8 p-0 ${
-                    isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
-                  }`}
+                  className={`h-8 w-8 p-0 ${isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
+                    }`}
                   onClick={handleWishlistToggle}
                   disabled={loading.wishlist}
                 >
@@ -237,8 +239,8 @@ export function ProductListCard({
                 </Button>
 
                 {/* Add to Cart Button */}
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   disabled={product.stock_quantity === 0 || loading.cart}
                   onClick={handleAddToCart}
                   className="text-xs px-3 py-1"

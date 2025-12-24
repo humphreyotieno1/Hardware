@@ -182,24 +182,43 @@ export function CategoryGrid() {
     return (
       <section className="py-12 sm:py-16 lg:py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Shop by Category
-            </h2>
-            <p className="text-muted-foreground">
-              Loading categories...
-            </p>
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <div className="h-6 w-48 bg-muted rounded-full mx-auto mb-4 animate-pulse" />
+            <div className="h-10 w-64 bg-muted rounded mx-auto mb-4 animate-pulse" />
+            <div className="h-5 w-96 max-w-full bg-muted rounded mx-auto animate-pulse" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-16 w-16 bg-muted rounded-full mx-auto mb-4" />
-                  <div className="h-6 bg-muted rounded mb-2" />
-                  <div className="h-4 bg-muted rounded mb-4" />
-                  <div className="h-4 bg-muted rounded w-1/2 mx-auto" />
-                </CardContent>
-              </Card>
+
+          {/* Horizontal carousel skeleton matching actual layout */}
+          <div className="flex space-x-4 sm:space-x-6 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-none w-64 animate-pulse"
+              >
+                <div className="h-full bg-muted/30 border-2 border-border/50 rounded-lg overflow-hidden">
+                  <div className="p-4 text-center h-full flex flex-col">
+                    {/* Icon skeleton */}
+                    <div className="mb-3 flex justify-center">
+                      <div className="w-12 h-12 rounded-full bg-muted" />
+                    </div>
+
+                    {/* Title skeleton */}
+                    <div className="h-5 bg-muted rounded w-3/4 mx-auto mb-2" />
+
+                    {/* Description skeleton */}
+                    <div className="space-y-1.5 mb-3">
+                      <div className="h-3 bg-muted rounded w-full" />
+                      <div className="h-3 bg-muted rounded w-4/5 mx-auto" />
+                    </div>
+
+                    {/* Badge skeleton */}
+                    <div className="mt-auto">
+                      <div className="h-5 bg-muted rounded-full w-24 mx-auto mb-2" />
+                      <div className="h-4 bg-muted rounded w-20 mx-auto" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>

@@ -142,12 +142,15 @@ export const ProductCard = memo(function ProductCard({
     }
   }
 
+  // Use slug if available, otherwise fallback to ID
+  const productUrl = `/products/${product.slug || product.ID}`
+
   return (
     <div className={`group relative h-full ${className}`}>
       <div className="h-full bg-background border border-border/40 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-border/80 hover:-translate-y-1">
         {/* Image Section with overlay */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          <Link href={`/products/${product.slug}`} className="block w-full h-full">
+          <Link href={productUrl} className="block w-full h-full">
             {product.images_json && product.images_json.length > 0 ? (
               <Image
                 src={product.images_json[0] || "/placeholder.svg"}
@@ -172,8 +175,8 @@ export const ProductCard = memo(function ProductCard({
             onClick={handleWishlistToggle}
             disabled={loading.wishlist}
             className={`absolute top-3 right-3 z-10 h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200 ${isInWishlist
-                ? 'bg-red-500 text-white shadow-lg'
-                : 'bg-white/90 text-muted-foreground hover:bg-red-500 hover:text-white hover:scale-110 shadow-md'
+              ? 'bg-red-500 text-white shadow-lg'
+              : 'bg-white/90 text-muted-foreground hover:bg-red-500 hover:text-white hover:scale-110 shadow-md'
               }`}
           >
             {loading.wishlist ? (
@@ -228,7 +231,7 @@ export const ProductCard = memo(function ProductCard({
           )}
 
           {/* Product Name - Clickable */}
-          <Link href={`/products/${product.slug}`} className="block group/title">
+          <Link href={productUrl} className="block group/title">
             <h3 className="font-semibold text-foreground leading-snug line-clamp-2 group-hover/title:text-primary transition-colors duration-200">
               {product.name}
             </h3>

@@ -384,7 +384,7 @@ export function Header() {
                       className="hover:translate-x-1 transition-transform duration-200"
                     >
                       <Link
-                        href={`/products/${product.slug}`}
+                        href={`/products/${product.slug || product.ID}`}
                         className="flex items-center space-x-3 p-2 rounded hover:bg-muted transition-colors"
                       >
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded overflow-hidden flex-shrink-0">
