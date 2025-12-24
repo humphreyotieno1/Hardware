@@ -21,6 +21,7 @@ import { Search, ShoppingCart, User, Menu, Heart, LogOut, Settings, Phone, Mail,
 import { productsApi } from "@/lib/api"
 import type { Category, Product } from "@/lib/api/types"
 import { env } from "@/lib/config/env"
+import Image from "next/image"
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -389,9 +390,11 @@ export function Header() {
                       >
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded overflow-hidden flex-shrink-0">
                           {product.images_json?.[0] ? (
-                            <img
+                            <Image
                               src={product.images_json[0]}
                               alt={product.name}
+                              width={100}
+                              height={100}
                               className="w-full h-full object-cover"
                             />
                           ) : (
