@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { productsApi } from "@/lib/api"
@@ -9,76 +10,30 @@ import type { Product } from "@/lib/api/types"
 import { ProductCard } from "@/components/ui/product-card"
 import { SimplePagination } from "@/components/ui/pagination"
 import { ArrowRight } from "lucide-react"
-
-const PAGE_SIZE_DESKTOP = 8
-const PAGE_SIZE_MOBILE = 4
-
-function useResponsivePageSize() {
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_DESKTOP)
-
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth < 768) {
-        setPageSize(PAGE_SIZE_MOBILE)
-      } else {
-        setPageSize(PAGE_SIZE_DESKTOP)
-      }
-    }
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
-  return pageSize
-}
+import { useResponsivePageSize } from "@/lib/hooks/use-responsive-page-size"
 
 export function FeaturedProducts() {
   const pageSize = useResponsivePageSize()
-  const [products, setProducts] = useState<Product[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    let isMounted = true
-    setLoading(true)
-    const fetchProducts = async () => {
-      try {
-        const res = await productsApi.searchProducts({ limit: pageSize, page })
-        if (isMounted) {
-          setProducts(res.products)
-          setTotal(res.total)
-        }
-      } catch (error) {
-        if (isMounted) {
-          setProducts([])
-          setTotal(0)
-        }
-        console.error("Failed to fetch products:", error)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    fetchProducts()
-    return () => {
-      isMounted = false
-    }
-  }, [page, pageSize])
+  const { data, isLoading } = useQuery({
+    queryKey: ['featured-products', page, pageSize],
+    queryFn: async () => {
+      const res = await productsApi.searchProducts({ limit: pageSize, page })
+      return res
+    },
+  })
 
-  // Reset to page 1 if pageSize changes (e.g., device orientation/responsive)
-  useEffect(() => {
-    setPage(1)
-  }, [pageSize])
-
+  const products = data?.products || []
+  const total = data?.total || 0
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   const handlePageChange = (newPage: number) => {
-    // Ensure the new page is within valid bounds
     const validPage = Math.max(1, Math.min(newPage, totalPages))
     setPage(validPage)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-16 bg-card/50">
         <div className="container mx-auto px-4">
@@ -130,9 +85,9 @@ export function FeaturedProducts() {
               No featured products found.
             </div>
           ) : (
-            products.map((product) => (
-              <ProductCard 
-                key={product.ID} 
+            products.map((product: Product) => (
+              <ProductCard
+                key={product.ID}
                 product={product}
               />
             ))

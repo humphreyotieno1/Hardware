@@ -12,7 +12,7 @@ const heroImages = [
     fallback: "bg-gradient-to-br from-blue-600 to-blue-800"
   },
   {
-    src: "/images/hero/tools.jpg", 
+    src: "/images/hero/tools.jpg",
     alt: "Electrical supplies and components",
     fallback: "bg-gradient-to-br from-yellow-500 to-orange-600"
   },
@@ -71,14 +71,13 @@ export function HeroSection() {
         {heroImages.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentImageIndex ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
           >
             {/* Try to load image, fallback to gradient if fails */}
             <div className="relative w-full h-full">
               <div className={`absolute inset-0 ${image.fallback}`} />
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
                   backgroundImage: `url(${image.src})`,
@@ -99,7 +98,7 @@ export function HeroSection() {
       >
         <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
       </button>
-      
+
       <button
         onClick={nextImage}
         className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
@@ -114,11 +113,10 @@ export function HeroSection() {
           <button
             key={index}
             onClick={() => goToImage(index)}
-            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-              index === currentImageIndex
-                ? "bg-white scale-125"
-                : "bg-white/50 hover:bg-white/75"
-            }`}
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === currentImageIndex
+              ? "bg-white scale-125"
+              : "bg-white/50 hover:bg-white/75"
+              }`}
             aria-label={`Go to image ${index + 1}`}
           />
         ))}
@@ -139,7 +137,7 @@ export function HeroSection() {
                   Quick and Easy Building Solutions
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 text-pretty leading-relaxed drop-shadow-md max-w-2xl mx-auto lg:mx-0">
-                  Quality products at competitive prices. Your one-stop shop for construction, plumbing, electrical work, and more. 
+                  Quality products at competitive prices. Your one-stop shop for construction, plumbing, electrical work, and more.
                   Trusted by professionals across Kenya with reliable delivery and expert support.
                 </p>
 
@@ -192,7 +190,7 @@ export function HeroSection() {
                     <p className="text-xs sm:text-sm text-white/80">High-quality tools for every trade</p>
                     <div className="mt-2 sm:mt-3 text-xs text-white/60">Get quality tools at affordable prices</div>
                   </div>
-                  
+
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 text-center border border-white/20 hover:bg-white/20 transition-all duration-300 animate-slide-in-right">
                     <Zap className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 mx-auto mb-2 sm:mb-3 lg:mb-4 text-secondary" />
                     <h3 className="font-semibold mb-1 sm:mb-2 lg:mb-2 text-white text-sm sm:text-base">Electrical Supplies</h3>
@@ -200,7 +198,7 @@ export function HeroSection() {
                     <div className="mt-2 sm:mt-3 text-xs text-white/60">Wide range available</div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3 sm:space-y-4 mt-6 sm:mt-8">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 text-center border border-white/20 hover:bg-white/20 transition-all duration-300 animate-slide-in-left">
                     <Hammer className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 mx-auto mb-2 sm:mb-3 lg:mb-4 text-secondary" />
@@ -241,7 +239,7 @@ export function HeroSection() {
                     <div className="text-xs text-white/60">Bulk Discounts</div>
                   </div>
                 </div>
-                
+
                 {/* Mobile Promo Badge */}
                 <div className="mt-3 sm:mt-4 bg-primary/90 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-semibold">
                   🎯 Get Started. Save Big

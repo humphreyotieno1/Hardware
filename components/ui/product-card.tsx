@@ -1,15 +1,16 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/api"
 import { cartApi, wishlistApi } from "@/lib/api"
-import type { Product } from "@/lib/api/types"
+import type { Product, WishlistItem } from "@/lib/api/types"
 import { ShoppingCart, Heart, Star, Loader2, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useState, useEffect } from "react"
+import { useState, useEffect, memo } from "react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useCart } from "@/lib/hooks/use-cart"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
@@ -23,10 +24,10 @@ interface ProductCardProps {
   className?: string
 }
 
-export function ProductCard({ 
-  product, 
-  onAddToCart, 
-  onAddToWishlist, 
+export const ProductCard = memo(function ProductCard({
+  product,
+  onAddToCart,
+  onAddToWishlist,
   showCategory = true,
   className = ""
 }: ProductCardProps) {
@@ -43,7 +44,7 @@ export function ProductCard({
 
   // Check if product is in wishlist using hook data
   useEffect(() => {
-    const wishlistItem = wishlistItems.find(item => item.product_id === product.ID)
+    const wishlistItem = wishlistItems.find((item: WishlistItem) => item.product_id === product.ID)
     if (wishlistItem) {
       setIsInWishlist(true)
       setWishlistItemId(wishlistItem.ID)
@@ -56,7 +57,7 @@ export function ProductCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (onAddToCart) {
       onAddToCart(product.ID)
       return
@@ -75,7 +76,7 @@ export function ProductCard({
     try {
       setLoading(prev => ({ ...prev, cart: true }))
       await addToCart(product.ID, 1)
-      
+
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,
@@ -95,7 +96,7 @@ export function ProductCard({
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (onAddToWishlist) {
       onAddToWishlist(product.ID)
       return
@@ -113,7 +114,7 @@ export function ProductCard({
 
     try {
       setLoading(prev => ({ ...prev, wishlist: true }))
-      
+
       if (isInWishlist && wishlistItemId) {
         // Remove from wishlist
         await removeFromWishlist(wishlistItemId)
@@ -142,16 +143,19 @@ export function ProductCard({
   }
 
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 h-full flex flex-col ${className}`}>
-      <CardContent className="p-3 flex flex-col h-full">
+    <Card className={`group hover-lift hover:shadow-2xl transition-all duration-500 h-full flex flex-col border-border/50 overflow-hidden ${className}`}>
+      <CardContent className="p-0 flex flex-col h-full">
         {/* Image Section */}
-        <div className="relative mb-3">
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+        <div className="relative">
+          <div className="aspect-[4/5] bg-muted overflow-hidden relative">
             {product.images_json && product.images_json.length > 0 ? (
-              <img
+              <Image
                 src={product.images_json[0] || "/placeholder.svg"}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -159,14 +163,13 @@ export function ProductCard({
               </div>
             )}
           </div>
-          
+
           {/* Wishlist Button - Independent click */}
           <Button
             variant="ghost"
             size="sm"
-            className={`absolute top-1.5 right-1.5 h-7 w-7 p-0 bg-background/80 hover:bg-background ${
-              isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
-            }`}
+            className={`absolute top-1.5 right-1.5 h-7 w-7 p-0 bg-background/80 hover:bg-background ${isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
+              }`}
             onClick={handleWishlistToggle}
             disabled={loading.wishlist}
           >
@@ -178,7 +181,7 @@ export function ProductCard({
               <Heart className="h-3.5 w-3.5" />
             )}
           </Button>
-          
+
           {/* Stock Badge */}
           {product.stock_quantity > 0 && (
             <Badge variant="default" className="absolute top-1.5 left-1.5 bg-green-600 hover:bg-green-700 text-xs px-1.5 py-0.5">
@@ -232,8 +235,8 @@ export function ProductCard({
           </div>
 
           {/* Add to Cart Button - Independent click */}
-          <Button 
-            className="w-full mt-auto text-sm py-2" 
+          <Button
+            className="w-full mt-auto text-sm py-2"
             disabled={product.stock_quantity === 0 || loading.cart}
             onClick={handleAddToCart}
           >
@@ -248,4 +251,4 @@ export function ProductCard({
       </CardContent>
     </Card>
   )
-}
+})

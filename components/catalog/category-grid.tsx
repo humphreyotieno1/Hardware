@@ -3,18 +3,18 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Wrench, 
-  Hammer, 
-  Zap, 
-  Droplets, 
-  PaintBucket, 
-  Drill, 
-  HardHat, 
+import {
+  Wrench,
+  Hammer,
+  Zap,
+  Droplets,
+  PaintBucket,
+  Drill,
+  HardHat,
   Settings as Screwdriver,
   Package,
-  Star, 
-  TrendingUp 
+  Star,
+  TrendingUp
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { productsApi } from "@/lib/api/products"
@@ -131,10 +131,10 @@ export function CategoryGrid() {
     const fetchCategoriesWithCounts = async () => {
       try {
         setLoading(true)
-        
+
         // Get all categories from API
         const categories = await productsApi.getCategories()
-        
+
         // Get product counts for each category using frontend aggregation
         const categoryCounts = await productsApi.getCategoryCounts()
 
@@ -155,7 +155,7 @@ export function CategoryGrid() {
             })
           } as CategoryWithCount
         })
-        
+
         setCategoriesWithCounts(categoriesWithCounts)
       } catch (error) {
         console.error("Error fetching categories:", error)
@@ -163,7 +163,7 @@ export function CategoryGrid() {
         setCategoriesWithCounts(
           categoryData.map(cat => ({
             id: cat.slug,
-            name: cat.slug.split('-').map(word => 
+            name: cat.slug.split('-').map(word =>
               word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' '),
             productCount: 0,
@@ -217,13 +217,13 @@ export function CategoryGrid() {
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Most Popular Categories</span>
             </div>
-            
+
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 text-balance">
               Shop by Category
             </h2>
-            
+
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto text-pretty leading-relaxed px-2">
-              Find exactly what you need from our comprehensive selection of hardware and construction supplies. 
+              Find exactly what you need from our comprehensive selection of hardware and construction supplies.
               Quality products at competitive prices with expert support.
             </p>
           </div>
@@ -243,7 +243,7 @@ export function CategoryGrid() {
                   <Link href={`/categories/${category.slug}`} className="block h-full">
                     <Card className={`h-full hover:shadow-xl transition-all duration-300 group border-2 hover:border-primary/30 relative overflow-hidden ${category.bgColor}`}>
                       {/* Faded Background Image */}
-                      <div 
+                      <div
                         className="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300"
                         style={{ backgroundImage: `url(${category.backgroundImage})` }}
                       />
@@ -258,16 +258,16 @@ export function CategoryGrid() {
                             />
                           </div>
                         </div>
-                        
+
                         {/* Category Info */}
                         <h3 className="font-bold text-base text-foreground mb-2 group-hover:text-primary transition-colors">
                           {category.name}
                         </h3>
-                        
+
                         <p className="text-xs text-muted-foreground mb-3 text-pretty leading-relaxed line-clamp-2">
                           {category.description}
                         </p>
-                        
+
                         <div className="mt-auto">
                           {/* Product Count */}
                           <div className="mb-2">
@@ -276,13 +276,13 @@ export function CategoryGrid() {
                               {category.productCount} {category.productCount === 1 ? 'product' : 'products'}
                             </Badge>
                           </div>
-                          
+
                           {/* Discount/Feature */}
                           <div className="text-xs text-primary font-medium mb-2">
                             {category.discount}
                           </div>
                         </div>
-                        
+
                         {/* Hover Effect */}
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="inline-flex items-center text-primary text-xs font-medium">
@@ -299,7 +299,7 @@ export function CategoryGrid() {
               )
             })}
           </div>
-          
+
           {/* Scroll hint for desktop */}
           <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none hidden sm:block"></div>
         </div>
