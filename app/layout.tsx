@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Grahad Ventures Limited" }],
   creator: "Grahad Ventures Limited",
   publisher: "Grahad Ventures Limited",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL || "https://grahadventures.co.ke"),
+  metadataBase: new URL("https://www.grahadventures.co.ke"),
   alternates: {
     canonical: "/",
   },
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_KE",
-    url: "https://grahadventures.co.ke",
+    url: "https://www.grahadventures.co.ke",
     siteName: "Grahad Ventures Limited",
     title: "Grahad Ventures Limited - Professional Tools & Supplies",
     description: "Your trusted partner for construction and hardware supplies in Siaya, Kenya.",
