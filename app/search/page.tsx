@@ -8,23 +8,12 @@ export const metadata: Metadata = {
   description: "Search for products",
 }
 
-interface SearchPageProps {
-  searchParams: {
-    q?: string
-    page?: string
-    sort?: string
-    category?: string
-    minPrice?: string
-    maxPrice?: string
-  }
-}
-
-export default function SearchPage({ searchParams }: SearchPageProps) {
+export default function SearchPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <SearchResults searchParams={searchParams} />
+        <SearchResults />
       </main>
       <Footer />
     </div>

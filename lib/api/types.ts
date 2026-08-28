@@ -69,6 +69,14 @@ export interface ProductSearchParams {
   page?: number
   limit?: number
   sort?: "price_asc" | "price_desc" | "name" | "newest"
+  min_price?: number
+  max_price?: number
+  in_stock?: boolean
+}
+
+export interface CatalogSuggestion {
+  products: Product[]
+  categories: Category[]
 }
 
 // Cart Types

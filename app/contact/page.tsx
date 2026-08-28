@@ -53,29 +53,25 @@ const contactCategories = [
 // FAQ data
 const faqs = [
   {
-    question: "What are your shipping options?",
-    answer: "We offer standard shipping, and same-day delivery for local orders."
+    question: "Where is the store?",
+    answer: "Grahad Ventures Limited is on Siaya-Bondo Highway, opposite Siaya Prison.",
   },
   {
-    question: "Do you offer bulk discounts?",
-    answer: "Yes! We provide volume discounts for orders over. Contact our business team for custom pricing."
+    question: "What are your opening hours?",
+    answer: "Monday to Saturday, 7:00 AM to 6:00 PM. Closed on Sunday.",
   },
   {
-    question: "What is your return policy?",
-    answer: "We offer a 30-day return policy for unused items in original packaging. Some items may have different return terms."
+    question: "Do you deliver?",
+    answer: "Yes. We support delivery across Siaya and surrounding areas. Contact the store for project and bulk deliveries.",
   },
   {
-    question: "Do you have a physical store?",
-    answer: "Yes, our main store is located at Siaya-Bondo Highway Opp. Siaya Prison. We're open Monday-Friday 7AM-6PM and Saturday 7AM-6PM."
+    question: "Can I place a bulk order?",
+    answer: "Yes. Contractors and project buyers can request a quote by phone, WhatsApp or the contact form.",
   },
   {
-    question: "Can I track my order?",
-    answer: "Absolutely! Once your order ships, you'll receive a tracking number via email to monitor your package's progress."
+    question: "How do I get help choosing products?",
+    answer: "Call or WhatsApp the store and we will help you choose from the stock we carry.",
   },
-  {
-    question: "Do you offer technical support?",
-    answer: "Yes, our technical support team is available 24/7 to help with product questions and troubleshooting."
-  }
 ]
 
 export default function ContactPage() {

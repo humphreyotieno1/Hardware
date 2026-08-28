@@ -1,20 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { productsApi, formatPrice } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
-import { ProductCard } from "@/components/ui/product-card"
 import { useCart } from "@/lib/hooks/use-cart"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { ShoppingCart, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw, Loader2 } from "lucide-react"
+import { useStoreUi } from "@/lib/hooks/use-store-ui"
+import { Icon } from "@/lib/icons"
+import { FavouriteIcon, Loading03Icon, MinusSignIcon, PlusSignIcon, RepeatIcon, ShoppingCart01Icon, TruckDeliveryIcon } from "@hugeicons/core-free-icons"
+import { ProductGallery } from "@/components/catalog/product-gallery"
+import { RelatedProducts } from "@/components/catalog/related-products"
+import { env } from "@/lib/config/env"
+import { cn } from "@/lib/utils"
 
 interface ProductDetailProps {
   productSlug: string
@@ -25,57 +28,46 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
-  const [selectedImage, setSelectedImage] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false)
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [wishlistItemId, setWishlistItemId] = useState<string | null>(null)
+  const [showSticky, setShowSticky] = useState(false)
+  const buyBoxRef = useRef<HTMLDivElement>(null)
 
   const { toast } = useToast()
   const { user } = useAuth()
   const { addItem: addToCart } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, wishlistItems } = useWishlist()
+  const { openCart } = useStoreUi()
 
-  // Check if product is in wishlist
   useEffect(() => {
-    if (product) {
-      const wishlistItem = wishlistItems.find(item => item.product_id === product.ID)
-      if (wishlistItem) {
-        setIsInWishlist(true)
-        setWishlistItemId(wishlistItem.ID)
-      } else {
-        setIsInWishlist(false)
-        setWishlistItemId(null)
-      }
-    }
+    if (!product) return
+    const wishlistItem = wishlistItems.find((item) => item.product_id === product.ID)
+    setIsInWishlist(Boolean(wishlistItem))
+    setWishlistItemId(wishlistItem?.ID ?? null)
   }, [wishlistItems, product])
+
+  useEffect(() => {
+    const node = buyBoxRef.current
+    if (!node) return
+    const observer = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { threshold: 0.2 })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [product])
 
   const handleAddToCart = async () => {
     if (!product) return
-
     if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to add items to your cart.",
-        variant: "destructive"
-      })
+      toast({ title: "Login required", description: "Please log in to add items to your cart.", variant: "destructive" })
       return
     }
-
     try {
       setIsAddingToCart(true)
       await addToCart(product.ID, quantity)
-      toast({
-        title: "Added to cart",
-        description: `${product.name} (${quantity}) has been added to your cart.`,
-      })
-    } catch (error) {
-      console.error('Error adding to cart:', error)
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart. Please try again.",
-        variant: "destructive"
-      })
+      openCart()
+    } catch {
+      toast({ title: "Error", description: "Failed to add item to cart. Please try again.", variant: "destructive" })
     } finally {
       setIsAddingToCart(false)
     }
@@ -83,41 +75,16 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
 
   const handleWishlistToggle = async () => {
     if (!product) return
-
     if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to manage your wishlist.",
-        variant: "destructive"
-      })
+      toast({ title: "Login required", description: "Please log in to manage your wishlist.", variant: "destructive" })
       return
     }
-
     try {
       setIsAddingToWishlist(true)
-
-      if (isInWishlist && wishlistItemId) {
-        // Remove from wishlist
-        await removeFromWishlist(wishlistItemId)
-        toast({
-          title: "Removed from wishlist",
-          description: `${product.name} has been removed from your wishlist.`,
-        })
-      } else {
-        // Add to wishlist
-        await addToWishlist(product.ID)
-        toast({
-          title: "Added to wishlist",
-          description: `${product.name} has been added to your wishlist.`,
-        })
-      }
-    } catch (error) {
-      console.error('Error toggling wishlist:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update wishlist. Please try again.",
-        variant: "destructive"
-      })
+      if (isInWishlist && wishlistItemId) await removeFromWishlist(wishlistItemId)
+      else await addToWishlist(product.ID)
+    } catch {
+      toast({ title: "Error", description: "Failed to update wishlist. Please try again.", variant: "destructive" })
     } finally {
       setIsAddingToWishlist(false)
     }
@@ -128,41 +95,32 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
       try {
         const productData = await productsApi.getProduct(productSlug)
         setProduct(productData)
-
-        // Fetch related products from the same category
         if (productData.category) {
           try {
             const relatedData = await productsApi.getProductsByCategory(productData.category.slug, { limit: 8 })
-            // Filter out the current product from related products
-            const filteredRelated = relatedData.products.filter(p => p.ID !== productData.ID)
-            setRelatedProducts(filteredRelated.slice(0, 8)) // Show max 8 related products
-          } catch (error) {
-            console.error("Failed to fetch related products:", error)
+            setRelatedProducts(relatedData.products.filter((p) => p.ID !== productData.ID).slice(0, 8))
+          } catch {
             setRelatedProducts([])
           }
         }
-      } catch (error) {
-        console.error("Failed to fetch product:", error)
+      } catch {
+        setProduct(null)
       } finally {
         setLoading(false)
       }
     }
-
     fetchProduct()
   }, [productSlug])
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="aspect-square bg-muted rounded-lg"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4"></div>
-              <div className="h-6 bg-muted rounded w-1/2"></div>
-              <div className="h-4 bg-muted rounded w-full"></div>
-              <div className="h-4 bg-muted rounded w-2/3"></div>
-            </div>
+        <div className="grid animate-pulse grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="aspect-square rounded-3xl bg-muted" />
+          <div className="space-y-4">
+            <div className="h-8 w-3/4 rounded-full bg-muted" />
+            <div className="h-6 w-1/2 rounded-full bg-muted" />
+            <div className="h-24 rounded-3xl bg-muted" />
           </div>
         </div>
       </div>
@@ -171,214 +129,150 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Product Not Found</h1>
-          <p className="text-muted-foreground mb-6">The product you're looking for doesn't exist.</p>
-          <Button asChild>
-            <Link href="/search">Browse All Products</Link>
-          </Button>
-        </div>
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="font-display text-3xl font-semibold">Product not found</h1>
+        <p className="mt-2 text-muted-foreground">This product is unavailable or no longer listed.</p>
+        <Button asChild className="mt-6">
+          <Link href="/shop">Browse products</Link>
+        </Button>
       </div>
     )
   }
 
-  const images = product.images_json && product.images_json.length > 0 ? product.images_json : ["/placeholder.svg"]
+  const images = product.images_json?.length ? product.images_json : ["/placeholder.svg"]
+  const inStock = product.stock_quantity > 0
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
-        <Link href="/" className="hover:text-foreground">
-          Home
-        </Link>
+    <div className="container mx-auto px-4 py-6 pb-28 sm:py-8 lg:pb-8">
+      <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-foreground">Home</Link>
         <span>/</span>
-        {product.category && (
+        <Link href="/shop" className="hover:text-foreground">Shop</Link>
+        {product.category ? (
           <>
+            <span>/</span>
             <Link href={`/categories/${product.category.slug}`} className="hover:text-foreground">
               {product.category.name}
             </Link>
-            <span>/</span>
           </>
-        )}
-        <span className="text-foreground font-medium">{product.name}</span>
+        ) : null}
+        <span>/</span>
+        <span className="font-medium text-foreground">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Product Images */}
-        <div className="space-y-4">
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-            <img
-              src={images[selectedImage] || "/placeholder.svg"}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square bg-muted rounded-lg overflow-hidden border-2 transition-colors ${selectedImage === index ? "border-accent" : "border-transparent"
-                    }`}
-                >
-                  <img
-                    src={image || "/placeholder.svg"}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+        <ProductGallery images={images} name={product.name} />
 
-        {/* Product Info */}
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2 text-balance">{product.name}</h1>
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                ))}
-                <span className="text-sm text-muted-foreground ml-2">(4.5) • 127 reviews</span>
-              </div>
-            </div>
-            <p className="text-muted-foreground text-pretty leading-relaxed">{product.description}</p>
+          {product.category ? (
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{product.category.name}</p>
+          ) : null}
+          <h1 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">{product.name}</h1>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <p className="font-display text-3xl font-semibold">{formatPrice(product.price)}</p>
+            <Badge className={cn("rounded-full", inStock ? "bg-emerald-700" : "bg-muted text-muted-foreground")}>
+              {inStock ? `${product.stock_quantity} in stock` : "Out of stock"}
+            </Badge>
           </div>
+          {product.description ? (
+            <p className="leading-relaxed text-muted-foreground">{product.description}</p>
+          ) : null}
 
-          <Separator />
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-3xl font-bold text-foreground">{formatPrice(product.price)}</span>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-                <p className="text-sm text-muted-foreground">
-                  Stock: {product.stock_quantity > 0 ? `${product.stock_quantity} available` : "Out of stock"}
-                </p>
-              </div>
-            </div>
-
-            {product.stock_quantity < 10 && product.stock_quantity > 0 && (
-              <Badge variant="destructive">Only {product.stock_quantity} left in stock!</Badge>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Quantity and Add to Cart */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium">Quantity:</label>
-              <div className="flex items-center border rounded-lg">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
+          <div ref={buyBoxRef} className="space-y-4 rounded-3xl border bg-card p-4 sm:p-5">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">Quantity</span>
+              <div className="inline-flex items-center rounded-full border">
+                <Button variant="ghost" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1} aria-label="Decrease quantity">
+                  <Icon icon={MinusSignIcon} size={16} />
                 </Button>
-                <span className="px-4 py-2 text-center min-w-[3rem]">{quantity}</span>
+                <span className="min-w-10 text-center text-sm font-semibold">{quantity}</span>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                  disabled={quantity >= product.stock_quantity}
+                  size="icon"
+                  onClick={() => setQuantity(Math.min(Math.max(product.stock_quantity, 1), quantity + 1))}
+                  disabled={!inStock || quantity >= product.stock_quantity}
+                  aria-label="Increase quantity"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Icon icon={PlusSignIcon} size={16} />
                 </Button>
               </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                className="flex-1"
-                size="lg"
-                disabled={product.stock_quantity === 0 || isAddingToCart}
-                onClick={handleAddToCart}
-              >
-                {isAddingToCart ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                )}
-                {product.stock_quantity === 0 ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button className="h-12" disabled={!inStock || isAddingToCart} onClick={handleAddToCart}>
+                {isAddingToCart ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} />}
+                {!inStock ? "Out of stock" : isAddingToCart ? "Adding…" : "Add to cart"}
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                disabled={isAddingToWishlist}
-                onClick={handleWishlistToggle}
-              >
-                {isAddingToWishlist ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <Heart className={`mr-2 h-5 w-5 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
-                )}
-                {isAddingToWishlist ? "Updating..." : isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              <Button variant="outline" className="h-12" disabled={isAddingToWishlist} onClick={handleWishlistToggle}>
+                {isAddingToWishlist ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={FavouriteIcon} className={isInWishlist ? "text-primary" : ""} />}
+                {isInWishlist ? "Wishlisted" : "Wishlist"}
               </Button>
             </div>
-          </div>
-
-          <Separator />
-
-          {/* Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-2">
-              <Truck className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-sm font-medium">Free Delivery</p>
-                <p className="text-xs text-muted-foreground">Orders over KES 5,000</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-sm font-medium">Warranty</p>
-                <p className="text-xs text-muted-foreground">1 year manufacturer</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RotateCcw className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-sm font-medium">Easy Returns</p>
-                <p className="text-xs text-muted-foreground">30-day return policy</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Related Products Section */}
-      <div className="mt-12">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Related Products</h2>
-          <p className="text-muted-foreground">You might also be interested in these products from the same category</p>
-        </div>
-
-        {relatedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((relatedProduct) => (
-              <ProductCard
-                key={relatedProduct.ID}
-                product={relatedProduct}
-                showCategory={false}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No related products found at the moment.</p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link href="/search">Browse All Products</Link>
+            <Button asChild variant="secondary" className="h-12 w-full">
+              <a href={env.getWhatsAppUrl(`Hello! I’m interested in ${product.name} (SKU: ${product.sku}).`)}>Enquire on WhatsApp</a>
             </Button>
           </div>
-        )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex gap-3 rounded-3xl border bg-card p-4">
+              <Icon icon={TruckDeliveryIcon} className="text-primary" />
+              <div>
+                <p className="text-sm font-semibold">Delivery</p>
+                <p className="text-xs text-muted-foreground">Siaya and surrounding areas</p>
+              </div>
+            </div>
+            <div className="flex gap-3 rounded-3xl border bg-card p-4">
+              <Icon icon={RepeatIcon} className="text-primary" />
+              <div>
+                <p className="text-sm font-semibold">Returns</p>
+                <p className="text-xs text-muted-foreground">See our returns policy</p>
+              </div>
+            </div>
+          </div>
+
+          <Accordion type="single" collapsible defaultValue="details" className="rounded-3xl border px-4">
+            <AccordionItem value="details">
+              <AccordionTrigger>Product details</AccordionTrigger>
+              <AccordionContent>
+                <dl className="grid gap-2 text-sm">
+                  {product.sku ? (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">SKU</dt>
+                      <dd>{product.sku}</dd>
+                    </div>
+                  ) : null}
+                  {product.category ? (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">Category</dt>
+                      <dd>{product.category.name}</dd>
+                    </div>
+                  ) : null}
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Availability</dt>
+                    <dd>{inStock ? "In stock" : "Out of stock"}</dd>
+                  </div>
+                </dl>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       </div>
+
+      {showSticky ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 p-3 backdrop-blur lg:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{product.name}</p>
+              <p className="font-display text-lg font-semibold">{formatPrice(product.price)}</p>
+            </div>
+            <Button className="min-h-11 shrink-0" disabled={!inStock || isAddingToCart} onClick={handleAddToCart}>
+              {isAddingToCart ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} />}
+              {inStock ? "Add" : "Out of stock"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <RelatedProducts products={relatedProducts} />
     </div>
   )
 }

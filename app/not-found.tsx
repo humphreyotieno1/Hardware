@@ -1,63 +1,35 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, Search, ArrowLeft } from "lucide-react"
+import { Icon } from "@/lib/icons"
+import { ArrowLeft01Icon, Home01Icon, Search01Icon } from "@hugeicons/core-free-icons"
 
 export default function NotFound() {
-    return (
-        <div className="min-h-screen bg-background flex items-center justify-center px-4">
-            <div className="text-center max-w-lg mx-auto space-y-8">
-                {/* 404 Number */}
-                <div className="relative">
-                    <h1 className="text-[150px] sm:text-[200px] font-bold text-muted/20 leading-none select-none">
-                        404
-                    </h1>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                            <p className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-                                Page Not Found
-                            </p>
-                            <p className="text-muted-foreground">
-                                Oops! The page you're looking for doesn't exist.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
-                    The page you're trying to reach may have been moved, deleted, or never existed.
-                    Let's get you back on track.
-                </p>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild variant="outline" size="lg">
-                        <Link href="javascript:history.back()">
-                            <ArrowLeft className="mr-2 h-5 w-5" />
-                            Go Back
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg">
-                        <Link href="/">
-                            <Home className="mr-2 h-5 w-5" />
-                            Back to Home
-                        </Link>
-                    </Button>
-                </div>
-
-                {/* Search suggestion */}
-                <div className="pt-8 border-t border-border">
-                    <p className="text-sm text-muted-foreground mb-4">
-                        Looking for something specific?
-                    </p>
-                    <Button asChild variant="secondary">
-                        <Link href="/search">
-                            <Search className="mr-2 h-4 w-4" />
-                            Search Products
-                        </Link>
-                    </Button>
-                </div>
-            </div>
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-lg text-center">
+        <p className="font-display text-7xl font-semibold text-muted-foreground/40">404</p>
+        <h1 className="mt-2 font-display text-3xl font-semibold">Page not found</h1>
+        <p className="mt-3 text-muted-foreground">
+          This page may have been moved, deleted, or never existed.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button asChild variant="outline" size="lg">
+            <Link href="/shop">
+              <Icon icon={Search01Icon} /> Search products
+            </Link>
+          </Button>
+          <Button asChild size="lg">
+            <Link href="/">
+              <Icon icon={Home01Icon} /> Back to home
+            </Link>
+          </Button>
         </div>
-    )
+        <Button asChild variant="ghost" className="mt-4">
+          <Link href="/categories">
+            <Icon icon={ArrowLeft01Icon} size={16} /> Browse categories
+          </Link>
+        </Button>
+      </div>
+    </div>
+  )
 }

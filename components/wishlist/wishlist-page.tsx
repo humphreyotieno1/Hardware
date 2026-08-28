@@ -1,20 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Heart, ArrowLeft, ShoppingCart, Trash2, Package, 
-  Loader2, AlertCircle 
-} from "lucide-react"
-import { cartApi } from "@/lib/api"
+import { Card, CardContent } from "@/components/ui/card"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { useCart } from "@/lib/hooks/use-cart"
-import type { WishlistItem } from "@/lib/api/types"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { formatPrice } from "@/lib/api"
+import { Icon } from "@/lib/icons"
+import { ArrowLeft01Icon, Delete02Icon, FavouriteIcon, Loading03Icon, Package01Icon, ShoppingCart01Icon } from "@hugeicons/core-free-icons"
 
 export function WishlistPage() {
   const { toast } = useToast()
@@ -72,7 +68,7 @@ export function WishlistPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <Icon icon={Loading03Icon} className="mr-2 animate-spin" />
           <span>Loading wishlist...</span>
         </div>
       </div>
@@ -87,7 +83,7 @@ export function WishlistPage() {
           <div className="flex items-center gap-4 mb-8">
             <Link href="/">
               <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Icon icon={ArrowLeft01Icon} size={16} className="mr-2" />
                 Back to Home
               </Button>
             </Link>
@@ -100,14 +96,14 @@ export function WishlistPage() {
           {/* Empty Wishlist */}
           <Card>
             <CardContent className="py-12 text-center">
-              <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <Icon icon={FavouriteIcon} size={48} className="mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">Your wishlist is empty</h3>
               <p className="text-muted-foreground mb-6">
                 Save items you love by clicking the heart icon on any product.
               </p>
-              <Link href="/products">
+              <Link href="/shop">
                 <Button>
-                  <Package className="h-4 w-4 mr-2" />
+                  <Icon icon={Package01Icon} size={16} className="mr-2" />
                   Browse Products
                 </Button>
               </Link>
@@ -125,7 +121,7 @@ export function WishlistPage() {
         <div className="flex items-center gap-4 mb-8">
           <Link href="/">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <Icon icon={ArrowLeft01Icon} size={16} className="mr-2" />
               Back to Home
             </Button>
           </Link>
@@ -167,9 +163,9 @@ export function WishlistPage() {
                     disabled={loading.removing}
                   >
                     {loading.removing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Icon icon={Loading03Icon} size={16} className="animate-spin" />
                     ) : (
-                      <Trash2 className="h-4 w-4" />
+                      <Icon icon={Delete02Icon} size={16} />
                     )}
                   </Button>
                   
@@ -216,9 +212,9 @@ export function WishlistPage() {
                       onClick={() => addToCartFromWishlist(item.product_id, item.product?.name || 'Product')}
                     >
                       {loading.adding ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Icon icon={Loading03Icon} size={16} className="mr-2 animate-spin" />
                       ) : (
-                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        <Icon icon={ShoppingCart01Icon} size={16} className="mr-2" />
                       )}
                       Add to Cart
                     </Button>
@@ -231,9 +227,9 @@ export function WishlistPage() {
 
         {/* Quick Actions */}
         <div className="mt-8 flex justify-center">
-          <Link href="/products">
+          <Link href="/shop">
             <Button variant="outline">
-              <Package className="h-4 w-4 mr-2" />
+              <Icon icon={Package01Icon} size={16} className="mr-2" />
               Continue Shopping
             </Button>
           </Link>

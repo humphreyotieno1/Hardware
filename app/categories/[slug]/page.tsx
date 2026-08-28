@@ -12,23 +12,16 @@ interface CategoryPageProps {
   params: {
     slug: string
   }
-  searchParams: {
-    page?: string
-    sort?: string
-    brand?: string
-    minPrice?: string
-    maxPrice?: string
-  }
 }
 
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params
   
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <CategoryProductListing categorySlug={slug} searchParams={searchParams} />
+        <CategoryProductListing categorySlug={slug} />
       </main>
       <Footer />
     </div>

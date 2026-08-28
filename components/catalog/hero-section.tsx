@@ -1,202 +1,141 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
+import useEmblaCarousel from "embla-carousel-react"
+import Autoplay from "embla-carousel-autoplay"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { env } from "@/lib/config/env"
+import { Icon } from "@/lib/icons"
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { cn } from "@/lib/utils"
 
-const heroImages = [
+const SLIDES = [
   {
-    src: "/images/hero/tools.jpg",
-    alt: "Professional construction tools",
+    image: "/images/hero/storefront.jpg",
+    eyebrow: "Siaya, Kenya",
+    title: "Professional hardware for every project",
+    text: "Construction, plumbing, electrical and hardware supplies for contractors, technicians and DIY customers.",
+    cta: { href: "/shop", label: "Shop now" },
+    secondary: { href: "/contact", label: "Contact us" },
   },
   {
-    src: "/images/hero/crown.jpg",
-    alt: "Building materials",
+    image: "/images/hero/building-blocks.jpg",
+    eyebrow: "Building supplies",
+    title: "Materials that keep the site moving",
+    text: "Cement, blocks, timber, roofing, masonry and everyday construction stock from a local Siaya yard.",
+    cta: { href: "/categories/building", label: "Shop building" },
+    secondary: { href: "/services", label: "Our services" },
   },
   {
-    src: "/images/hero/tools.jpg",
-    alt: "Hardware supplies",
-  }
-]
-
-const benefits = [
-  "Fast and reliable delivery",
-  "Quality guaranteed products",
-  "Expert technical support",
-  "Bulk order discounts"
-]
-
-const collageImages = [
-  { src: "/images/hero/tools.jpg", rotate: "-6deg", translateY: "15px" },
-  { src: "/images/hero/crown.jpg", rotate: "4deg", translateY: "-10px" },
-  { src: "/images/hero/tools.jpg", rotate: "-3deg", translateY: "25px" },
-  { src: "/images/hero/crown.jpg", rotate: "5deg", translateY: "0px" }
+    image: "/images/hero/block-yard.jpg",
+    eyebrow: "From the yard",
+    title: "Stock on the ground, ready for collection",
+    text: "Visit us on Siaya-Bondo Highway, opposite Siaya Prison, or call us for availability and delivery.",
+    cta: { href: "/shop", label: "Shop now" },
+    secondary: { href: env.getWhatsAppUrl("Hello! I need help with a hardware order."), label: "Talk to us", external: true },
+  },
 ]
 
 export function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 28 }, [
+    Autoplay({ delay: 6500, stopOnInteraction: false, stopOnMouseEnter: true }),
+  ])
+  const [index, setIndex] = useState(0)
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return
+    setIndex(emblaApi.selectedScrollSnap())
+  }, [emblaApi])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length)
+    if (!emblaApi) return
+    onSelect()
+    emblaApi.on("select", onSelect)
+    return () => {
+      emblaApi.off("select", onSelect)
+    }
+  }, [emblaApi, onSelect])
 
   return (
-    <section className="relative min-h-[600px] lg:min-h-[700px] overflow-hidden">
-      {/* Carousel Background */}
-      <div className="absolute inset-0">
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
-              }`}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${image.src})` }}
-            />
-          </div>
-        ))}
-
-        {/* Multi-layer overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
+    <section className="relative overflow-hidden bg-black text-white">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {SLIDES.map((slide, i) => (
+            <div key={slide.title} className="relative min-w-0 flex-[0_0_100%]">
+              <div className="absolute inset-0">
+                <img src={slide.image} alt="" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/30" />
+              </div>
+              <div className="relative container mx-auto flex min-h-[440px] flex-col justify-center px-4 py-14 sm:min-h-[520px] lg:min-h-[600px]">
+                <div key={i === index ? `${slide.title}-on` : `${slide.title}-off`}>
+                  {i === index ? (
+                    <>
+                      <p className="reveal-up mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80">
+                        {slide.eyebrow}
+                      </p>
+                      <h1 className="reveal-up stagger-1 max-w-xl font-display text-4xl font-semibold leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
+                        {slide.title}
+                      </h1>
+                      <p className="reveal-up stagger-2 mt-4 max-w-md text-sm leading-relaxed text-white/80 sm:text-base">
+                        {slide.text}
+                      </p>
+                      <div className="reveal-up stagger-3 mt-7 flex flex-col gap-3 sm:flex-row">
+                        <Button asChild size="lg">
+                          <Link href={slide.cta.href}>{slide.cta.label}</Link>
+                        </Button>
+                        {slide.secondary.external ? (
+                          <Button asChild size="lg" variant="outline" className="border-white/35 bg-transparent text-white hover:bg-white/10">
+                            <a href={slide.secondary.href}>{slide.secondary.label}</a>
+                          </Button>
+                        ) : (
+                          <Button asChild size="lg" variant="outline" className="border-white/35 bg-transparent text-white hover:bg-white/10">
+                            <Link href={slide.secondary.href}>{slide.secondary.label}</Link>
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80">{slide.eyebrow}</p>
+                      <h1 className="max-w-xl font-display text-4xl font-semibold leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">{slide.title}</h1>
+                      <p className="mt-4 max-w-md text-sm leading-relaxed text-white/80 sm:text-base">{slide.text}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Navigation Arrows */}
       <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all duration-300 border border-white/20 shadow-lg"
+        type="button"
+        className="absolute left-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/70 md:flex"
+        onClick={() => emblaApi?.scrollPrev()}
         aria-label="Previous slide"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <Icon icon={ArrowLeft01Icon} />
       </button>
       <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all duration-300 border border-white/20 shadow-lg"
+        type="button"
+        className="absolute right-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/70 md:flex"
+        onClick={() => emblaApi?.scrollNext()}
         aria-label="Next slide"
       >
-        <ChevronRight className="h-5 w-5" />
+        <Icon icon={ArrowRight01Icon} />
       </button>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {heroImages.map((_, index) => (
+      <div className="absolute bottom-5 left-0 right-0 z-10 flex justify-center gap-2">
+        {SLIDES.map((slide, i) => (
           <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
-              ? "w-8 bg-white"
-              : "w-2 bg-white/50 hover:bg-white/70"
-              }`}
-            aria-label={`Go to slide ${index + 1}`}
+            key={slide.title}
+            type="button"
+            aria-label={`Go to slide ${i + 1}`}
+            className={cn("h-2 rounded-full transition-all duration-300", i === index ? "w-8 bg-primary" : "w-2 bg-white/40")}
+            onClick={() => emblaApi?.scrollTo(i)}
           />
         ))}
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="container mx-auto px-4 py-16 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="space-y-6 text-center lg:text-left">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm font-medium border border-primary/30">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                Now Open for Orders
-              </div>
-
-              {/* Heading */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
-                Quick and Easy{" "}
-                <span className="text-primary">Building Solutions</span>
-              </h1>
-
-              {/* Description */}
-              <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Quality products at competitive prices. Your one-stop shop for construction, plumbing, electrical work, and more.
-                Trusted by professionals across Kenya with reliable delivery and expert support.
-              </p>
-
-              {/* Benefits Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-3 text-white/90">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-primary" />
-                    </div>
-                    <span className="text-sm">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-                <Button size="lg" asChild className="group shadow-lg shadow-primary/25">
-                  <Link href="/search">
-                    Shop Now
-                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="border-white/30 text-white hover:bg-white/10 hover:text-white bg-white/5 backdrop-blur-sm"
-                >
-                  <Link href="/services">
-                    View Services
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Right - Tilted Image Collage */}
-            <div className="hidden lg:block relative h-[450px]">
-              <div className="absolute inset-0 grid grid-cols-2 gap-4">
-                {collageImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className="relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:scale-105 hover:z-10 group"
-                    style={{
-                      transform: `rotate(${image.rotate}) translateY(${image.translateY})`,
-                    }}
-                  >
-                    {/* Image */}
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${image.src})` }}
-                    />
-
-                    {/* Darkening Overlay - Always visible */}
-                    <div className="absolute inset-0 bg-black/30" />
-
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                    {/* Border */}
-                    <div className="absolute inset-0 border-4 border-white/20 rounded-2xl shadow-inner" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Decorative elements */}
-              <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
-              <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-
-              {/* Floating dots */}
-              <div className="absolute top-1/3 -right-4 w-4 h-4 bg-primary rounded-full shadow-lg shadow-primary/50" />
-              <div className="absolute bottom-1/4 -left-3 w-3 h-3 bg-white/60 rounded-full" />
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   )

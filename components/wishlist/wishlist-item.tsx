@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { 
   ShoppingCart, 
   Trash2, 
-  Star, 
   Tag, 
   AlertCircle,
   Heart
@@ -27,8 +26,6 @@ interface WishlistItemProps {
       image: string
       category: string
       brand: string
-      rating: number
-      reviewCount: number
       inStock: boolean
       stockCount: number
     }
@@ -126,17 +123,6 @@ export function WishlistItem({
                     {formatPrice(item.product.comparePrice)}
                   </span>
                 )}
-              </div>
-
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium">{item.product.rating}</span>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  ({item.product.reviewCount} reviews)
-                </span>
               </div>
 
               {/* Notes */}
@@ -249,17 +235,6 @@ export function WishlistItem({
                 {formatPrice(item.product.comparePrice)}
               </span>
             )}
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm font-medium">{item.product.rating}</span>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              ({item.product.reviewCount} reviews)
-            </span>
           </div>
 
           {/* Notes */}

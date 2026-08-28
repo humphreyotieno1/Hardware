@@ -1,5 +1,21 @@
 import { getApiClient } from "./client"
 import type { Product, Category, ProductSearchParams } from "./types"
+import { toCatalogSortParams } from "@/lib/catalog/sort"
+
+function catalogQuery(params: ProductSearchParams = {}) {
+  const { sort, order } = toCatalogSortParams(params.sort)
+  return {
+    q: params.q,
+    category: params.category,
+    page: params.page,
+    limit: params.limit,
+    sort,
+    order,
+    min_price: params.min_price,
+    max_price: params.max_price,
+    in_stock: params.in_stock === undefined ? undefined : params.in_stock ? "true" : "false",
+  }
+}
 
 // Cache entries share a timestamped structure
 interface CacheEntry<T> {
@@ -62,12 +78,38 @@ export const productsApi = {
     page: number
     limit: number
   }> {
-    const response = await getApiClient().get("/catalog/products", params)
+    const response = await getApiClient().get("/catalog/products", catalogQuery(params))
     return response.data! as {
       products: Product[]
       total: number
       page: number
       limit: number
+    }
+  },
+
+  async suggest(params: { q: string; category?: string; limit?: number }): Promise<{
+    products: Product[]
+    categories: Category[]
+  }> {
+    try {
+      const response = await getApiClient().get("/catalog/suggest", {
+        q: params.q,
+        category: params.category,
+        limit: params.limit ?? 8,
+      })
+      const payload = response.data as { products?: Product[]; categories?: Category[] }
+      return {
+        products: payload?.products || [],
+        categories: payload?.categories || [],
+      }
+    } catch {
+      const data = await productsApi.searchProducts({
+        q: params.q,
+        category: params.category,
+        limit: params.limit ?? 8,
+        page: 1,
+      })
+      return { products: data.products || [], categories: [] }
     }
   },
 
@@ -85,7 +127,7 @@ export const productsApi = {
     page: number
     limit: number
   }> {
-    const response = await getApiClient().get("/catalog/products", { ...params, category: categorySlug })
+    const response = await getApiClient().get("/catalog/products", catalogQuery({ ...params, category: categorySlug }))
     return response.data! as {
       products: Product[]
       total: number
@@ -95,8 +137,10 @@ export const productsApi = {
   },
 
   async getFeaturedProducts(limit = 8): Promise<Product[]> {
-    const response = await getApiClient().get<Product[]>("/catalog/featured", { limit })
-    return response.data! as Product[]
+    const response = await getApiClient().get("/catalog/featured", { limit })
+    const payload = response.data as Product[] | { products?: Product[] }
+    if (Array.isArray(payload)) return payload
+    return payload?.products || []
   },
 
   async getTotalProductCount(): Promise<number> {

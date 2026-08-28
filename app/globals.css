@@ -4,73 +4,40 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens for service request system */
+  /* Live Grahad palette: cyan primary, blue accent, white surfaces */
   --background: oklch(1 0 0);
-  /* #ffffff - Clean white background */
   --foreground: oklch(0.35 0 0);
-  /* #4b5563 - Professional dark gray text */
   --card: oklch(0.98 0 0);
-  /* #f9fafb - Light card background */
   --card-foreground: oklch(0.35 0 0);
-  /* #4b5563 - Text on cards */
   --popover: oklch(1 0 0);
-  /* #ffffff - Popover background */
   --popover-foreground: oklch(0.35 0 0);
-  /* #4b5563 - Popover text */
   --primary: oklch(0.55 0.15 200);
-  /* #0891b2 - Cyan primary for reliability */
   --primary-foreground: oklch(1 0 0);
-  /* #ffffff - White text on primary */
   --secondary: oklch(0.55 0.2 250);
-  /* #2563eb - Blue accent */
   --secondary-foreground: oklch(1 0 0);
-  /* #ffffff - White text on secondary */
   --muted: oklch(0.98 0 0);
-  /* #f9fafb - Muted background */
   --muted-foreground: oklch(0.35 0 0);
-  /* #4b5563 - Muted text */
   --accent: oklch(0.55 0.2 250);
-  /* #2563eb - Blue accent for highlights */
   --accent-foreground: oklch(1 0 0);
-  /* #ffffff - White text on accent */
   --destructive: oklch(0.6 0.2 35);
-  /* #ea580c - Orange for errors/cancellations */
   --destructive-foreground: oklch(1 0 0);
-  /* #ffffff - White text on destructive */
   --border: oklch(0.92 0 0);
-  /* #e5e7eb - Light gray borders */
   --input: oklch(0.99 0.02 85);
-  /* #fefce8 - Light yellow input background */
   --ring: oklch(0.55 0.15 200 / 0.5);
-  /* Cyan primary with opacity for focus rings */
   --chart-1: oklch(0.65 0.15 250);
-  /* #60a5fa - Light blue */
   --chart-2: oklch(0.7 0.15 160);
-  /* #34d399 - Green */
   --chart-3: oklch(0.75 0.15 85);
-  /* #fbbf24 - Yellow */
   --chart-4: oklch(0.7 0.2 320);
-  /* #f472b6 - Pink */
   --chart-5: oklch(0.65 0.2 280);
-  /* #a78bfa - Purple */
-  --radius: 0.375rem;
-  /* 6px - Standard corner rounding */
+  --radius: 0.25rem;
   --sidebar: oklch(0.98 0 0);
-  /* #f9fafb - Light sidebar background */
   --sidebar-foreground: oklch(0.35 0 0);
-  /* #4b5563 - Sidebar text */
   --sidebar-primary: oklch(0.55 0.15 200);
-  /* #0891b2 - Cyan primary in sidebar */
   --sidebar-primary-foreground: oklch(1 0 0);
-  /* #ffffff - White text on sidebar primary */
   --sidebar-accent: oklch(0.55 0.2 250);
-  /* #2563eb - Blue sidebar accent */
   --sidebar-accent-foreground: oklch(1 0 0);
-  /* #ffffff - White text on sidebar accent */
   --sidebar-border: oklch(0.92 0 0);
-  /* #e5e7eb - Sidebar borders */
   --sidebar-ring: oklch(0.55 0.15 200 / 0.5);
-  /* Cyan focus ring for sidebar */
 }
 
 .dark {
@@ -109,7 +76,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-sen);
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -154,7 +122,36 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 
@@ -307,6 +304,26 @@
   .animate-bounce-in {
     animation: bounceIn 0.6s ease-out forwards;
   }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .reveal-up {
+    animation: reveal-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .stagger-1 { animation-delay: 80ms; }
+  .stagger-2 { animation-delay: 160ms; }
+  .stagger-3 { animation-delay: 240ms; }
+  .stagger-4 { animation-delay: 320ms; }
 
   /* Mobile touch improvements */
   @media (max-width: 640px) {
