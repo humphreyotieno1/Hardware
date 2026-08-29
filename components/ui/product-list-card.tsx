@@ -52,13 +52,9 @@ export function ProductListCard({
       onAddToCart(product.ID)
       return
     }
-    if (!user) {
-      toast({ title: "Login required", description: "Please log in to add items to your cart.", variant: "destructive" })
-      return
-    }
     try {
       setLoading((prev) => ({ ...prev, cart: true }))
-      await addToCart(product.ID, 1)
+      await addToCart(product.ID, 1, product)
       setAdded(true)
       openCart()
       window.setTimeout(() => setAdded(false), 1600)
@@ -92,7 +88,6 @@ export function ProductListCard({
   }
 
   const productUrl = `/products/${product.slug || product.ID}`
-  const inStock = product.stock_quantity > 0
 
   return (
     <article className={cn("group flex gap-4 overflow-hidden rounded-none border bg-card p-3 transition-all duration-300 hover:shadow-md sm:p-4", className)}>
@@ -112,11 +107,10 @@ export function ProductListCard({
         </Link>
         {product.sku ? <p className="mt-1 text-xs text-muted-foreground">SKU: {product.sku}</p> : null}
         <p className="mt-2 font-display text-lg font-semibold">{formatPrice(product.price)}</p>
-        <p className="text-xs text-muted-foreground">{inStock ? "In stock" : "Out of stock"}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" disabled={!inStock || loading.cart} onClick={handleAddToCart}>
+          <Button size="sm" disabled={loading.cart} onClick={handleAddToCart}>
             {loading.cart ? <Icon icon={Loading03Icon} size={14} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} size={14} />}
-            {added ? "Added" : inStock ? "Add to cart" : "Out of stock"}
+            {added ? "Added" : "Add to cart"}
           </Button>
           <Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={(e) => { e.preventDefault(); openQuickView(product) }}>
             Quick view

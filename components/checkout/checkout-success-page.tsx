@@ -63,10 +63,8 @@ export function CheckoutSuccessPage() {
           }
         }
 
-        // Fetch order details
         const order = await ordersApi.getOrderDetails(orderId || reference!)
-        
-        // Transform order data to component format
+
         setOrderDetails({
           orderId: order.ID,
           orderNumber: order.ID.substring(0, 8),
@@ -84,6 +82,24 @@ export function CheckoutSuccessPage() {
         })
       } catch (error) {
         console.error("Failed to fetch order details:", error)
+        try {
+          const stored = sessionStorage.getItem("last_order")
+          if (stored) {
+            const last = JSON.parse(stored)
+            setOrderDetails({
+              orderId: last.order_id,
+              orderNumber: String(last.order_id || "").substring(0, 8),
+              total: last.total,
+              status: "pending",
+              estimatedDelivery: "We will confirm shortly",
+              items: last.items || [],
+              address: last.address || { label: "", line: "", city: "", country: "Kenya" },
+              paymentMethod: last.payment_method === "whatsapp" ? "WhatsApp" : last.payment_method || "Pending",
+            })
+          }
+        } catch {
+          // ignore
+        }
       } finally {
         setLoading(false)
       }
@@ -139,7 +155,7 @@ export function CheckoutSuccessPage() {
         </div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Order Confirmed!</h1>
         <p className="text-muted-foreground text-lg">
-          Thank you for your purchase, {user?.full_name || "Customer"}!
+          Thank you for your purchase, {user?.full_name || orderDetails.address?.name || "Customer"}!
         </p>
         <p className="text-muted-foreground">
           Your order #{orderDetails.orderNumber} has been successfully placed.

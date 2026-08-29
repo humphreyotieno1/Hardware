@@ -3,7 +3,7 @@ import { Icon } from "@/lib/icons"
 
 const POINTS = [
   "Quality products for site and workshop",
-  "Reliable supply from a local Siaya store",
+  "Reliable supply from our store in Siaya",
   "Competitive pricing, including bulk orders",
   "Technical support when choosing supplies",
   "Delivery support for project orders",

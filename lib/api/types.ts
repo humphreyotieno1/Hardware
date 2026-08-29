@@ -121,6 +121,11 @@ export interface Address {
   line: string
   city: string
   country: string
+  name?: string
+  phone?: string
+  street?: string
+  state?: string
+  postal_code?: string
 }
 
 export interface ServiceRequest {
@@ -173,8 +178,20 @@ export interface PlaceOrderRequest {
 export interface PlaceOrderResponse {
   message: string
   order_id: string
-  payment_id: string
+  payment_id?: string
   total: number
+}
+
+export interface GuestOrderRequest {
+  name: string
+  phone: string
+  address: {
+    line: string
+    city: string
+    country: string
+  }
+  items: { product_id: string; quantity: number }[]
+  payment_method: string
 }
 
 // Service Request Types

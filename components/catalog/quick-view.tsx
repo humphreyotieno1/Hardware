@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useStoreUi } from "@/lib/hooks/use-store-ui"
 import { useCart } from "@/lib/hooks/use-cart"
-import { useAuth } from "@/lib/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { formatPrice } from "@/lib/api"
 import { Icon } from "@/lib/icons"
@@ -15,7 +14,6 @@ import { Loading03Icon, MinusSignIcon, PlusSignIcon, ShoppingCart01Icon } from "
 export function QuickView() {
   const { quickViewProduct: product, closeQuickView, openCart } = useStoreUi()
   const { addItem } = useCart()
-  const { user } = useAuth()
   const { toast } = useToast()
   const [qty, setQty] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -23,17 +21,12 @@ export function QuickView() {
 
   const open = Boolean(product)
   const images = product?.images_json?.length ? product.images_json : []
-  const inStock = (product?.stock_quantity || 0) > 0
 
   const handleAdd = async () => {
     if (!product) return
-    if (!user) {
-      toast({ title: "Login required", description: "Please log in to add items to your cart.", variant: "destructive" })
-      return
-    }
     try {
       setLoading(true)
-      await addItem(product.ID, qty)
+      await addItem(product.ID, qty, product)
       closeQuickView()
       openCart()
     } catch {
@@ -73,7 +66,6 @@ export function QuickView() {
               ) : null}
               <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">{product.name}</h2>
               <p className="mt-3 font-display text-3xl font-semibold">{formatPrice(product.price)}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{inStock ? "In stock" : "Out of stock"}</p>
               {product.description ? (
                 <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
               ) : null}
@@ -99,9 +91,9 @@ export function QuickView() {
                 </div>
               </div>
               <div className="mt-4 grid gap-2">
-                <Button className="h-12 w-full" disabled={!inStock || loading} onClick={handleAdd}>
+                <Button className="h-12 w-full" disabled={loading} onClick={handleAdd}>
                   {loading ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} />}
-                  {inStock ? (loading ? "Adding…" : "Add to cart") : "Out of stock"}
+                  {loading ? "Adding…" : "Add to cart"}
                 </Button>
                 <Button asChild variant="outline" className="h-12 w-full" onClick={closeQuickView}>
                   <Link href={`/products/${product.slug || product.ID}`}>View details</Link>

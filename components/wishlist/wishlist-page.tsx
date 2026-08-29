@@ -43,10 +43,10 @@ export function WishlistPage() {
     }
   }
 
-  const addToCartFromWishlist = async (productId: string, productName: string) => {
+  const addToCartFromWishlist = async (productId: string, productName: string, product?: import("@/lib/api/types").Product) => {
     try {
       setLoading(prev => ({ ...prev, adding: true }))
-      await addToCart(productId, 1)
+      await addToCart(productId, 1, product)
       
       toast({
         title: "Added to cart",
@@ -169,16 +169,6 @@ export function WishlistPage() {
                     )}
                   </Button>
                   
-                  {/* Stock Badge */}
-                  {item.product?.stock_quantity && item.product.stock_quantity > 0 ? (
-                    <Badge variant="default" className="absolute top-2 left-2 bg-green-600 hover:bg-green-700 text-xs px-2 py-1">
-                      In Stock
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="absolute top-2 left-2 text-xs px-2 py-1">
-                      Out of Stock
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Product Details */}
@@ -208,8 +198,8 @@ export function WishlistPage() {
                     <Button
                       size="sm"
                       className="flex-1"
-                      disabled={(item.product?.stock_quantity || 0) <= 0 || loading.adding}
-                      onClick={() => addToCartFromWishlist(item.product_id, item.product?.name || 'Product')}
+                      disabled={loading.adding}
+                      onClick={() => addToCartFromWishlist(item.product_id, item.product?.name || 'Product', item.product)}
                     >
                       {loading.adding ? (
                         <Icon icon={Loading03Icon} size={16} className="mr-2 animate-spin" />

@@ -1,9 +1,14 @@
 import { getApiClient } from "./client"
-import type { ShippingOption, PlaceOrderRequest, PlaceOrderResponse } from "./types"
+import type { GuestOrderRequest, ShippingOption, PlaceOrderRequest, PlaceOrderResponse } from "./types"
 
 export const checkoutApi = {
   async placeOrder(orderData: PlaceOrderRequest): Promise<PlaceOrderResponse> {
     const response = await getApiClient().post<PlaceOrderResponse>("/checkout/place", orderData)
+    return response.data!
+  },
+
+  async placeGuestOrder(orderData: GuestOrderRequest): Promise<PlaceOrderResponse> {
+    const response = await getApiClient().post<PlaceOrderResponse>("/checkout/guest", orderData)
     return response.data!
   },
 

@@ -679,12 +679,9 @@ export function AccountDashboard() {
                     <div>
                       <h3 className="font-semibold">{item.product?.name || "Product"}</h3>
                       <p className="text-lg font-bold text-primary">KSh {item.product?.price?.toLocaleString() || "0"}</p>
-                      <p className={`text-sm ${(item.product?.stock_quantity || 0) > 0 ? "text-green-600" : "text-red-600"}`}>
-                        {(item.product?.stock_quantity || 0) > 0 ? "In Stock" : "Out of Stock"}
-                      </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" disabled={(item.product?.stock_quantity || 0) <= 0}>
+                      <Button size="sm">
                         Add to Cart
                       </Button>
                       <Button variant="outline" size="sm">

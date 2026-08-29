@@ -8,7 +8,8 @@ import { useCart } from "@/lib/hooks/use-cart"
 import { formatPrice } from "@/lib/api"
 import { CartItem } from "@/components/cart/cart-item"
 import { Icon } from "@/lib/icons"
-import { ArrowLeft01Icon, ShoppingBag01Icon, TruckDeliveryIcon } from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, ShoppingBag01Icon, TruckDeliveryIcon, WhatsappIcon } from "@hugeicons/core-free-icons"
+import { openWhatsAppOrder } from "@/lib/cart/whatsapp-order"
 import { useState } from "react"
 
 export function CartPage() {
@@ -82,6 +83,15 @@ export function CartPage() {
             <p className="text-sm text-muted-foreground">Delivery is arranged at checkout for Siaya and surrounding areas.</p>
             <Button className="h-12 w-full" size="lg" asChild disabled={isUpdating}>
               <Link href="/checkout">Proceed to checkout</Link>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 w-full border-[#25D366] bg-white text-[#128C7E] hover:bg-[#25D366] hover:text-white"
+              disabled={isUpdating}
+              onClick={() => openWhatsAppOrder(cart.cart_items, total)}
+            >
+              <Icon icon={WhatsappIcon} size={16} /> Order on WhatsApp
             </Button>
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <Icon icon={TruckDeliveryIcon} size={14} className="text-primary" /> Local delivery support for project orders

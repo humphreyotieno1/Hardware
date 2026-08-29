@@ -4,8 +4,7 @@ import type React from "react"
 import { useEffect, useId, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Icon } from "@/lib/icons"
-import { ArrowDown01Icon, Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons"
-import type { Category } from "@/lib/api/types"
+import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 import { useSearchSuggestions } from "@/lib/hooks/use-search-suggestions"
 import { SearchSuggestions, buildSuggestionItems } from "@/components/layout/search-suggestions"
@@ -14,7 +13,6 @@ interface SearchBarProps {
   className?: string
   autoFocus?: boolean
   onSubmitted?: () => void
-  categories?: Category[]
   variant?: "compact" | "full"
 }
 
@@ -22,19 +20,15 @@ export function SearchBar({
   className,
   autoFocus,
   onSubmitted,
-  categories = [],
   variant = "compact",
 }: SearchBarProps) {
   const [query, setQuery] = useState("")
-  const [category, setCategory] = useState("all")
   const [open, setOpen] = useState(false)
-  const [catOpen, setCatOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const router = useRouter()
   const rootRef = useRef<HTMLDivElement>(null)
-  const catRef = useRef<HTMLDivElement>(null)
   const listId = useId()
-  const { products, categories: suggestedCategories, loading } = useSearchSuggestions(query, category, open || query.trim().length > 0)
+  const { products, categories: suggestedCategories, loading } = useSearchSuggestions(query, undefined, open || query.trim().length > 0)
 
   const items = buildSuggestionItems(suggestedCategories, products)
   const showPanel = open && query.trim().length > 0
@@ -45,9 +39,7 @@ export function SearchBar({
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const target = e.target as Node
-      if (!rootRef.current?.contains(target)) setOpen(false)
-      if (!catRef.current?.contains(target)) setCatOpen(false)
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener("mousedown", onClick)
     return () => document.removeEventListener("mousedown", onClick)
@@ -55,13 +47,10 @@ export function SearchBar({
 
   const goSearch = (term = query) => {
     const next = term.trim()
-    if (!next && category === "all") return
+    if (!next) return
     setOpen(false)
     onSubmitted?.()
-    const params = new URLSearchParams()
-    if (next) params.set("q", next)
-    if (category !== "all") params.set("category", category)
-    router.push(`/shop?${params.toString()}`)
+    router.push(`/shop?q=${encodeURIComponent(next)}`)
   }
 
   const activateItem = (index: number) => {
@@ -103,7 +92,6 @@ export function SearchBar({
     else goSearch()
   }
 
-  const selectedLabel = category === "all" ? "All Categories" : categories.find((c) => c.slug === category)?.name || "All Categories"
   const inputProps = {
     autoFocus,
     value: query,
@@ -168,42 +156,6 @@ export function SearchBar({
   return (
     <div ref={rootRef} className={cn("relative", className)}>
       <form onSubmit={handleSubmit} role="search" className="flex h-12 overflow-hidden rounded-full border bg-card">
-        <div ref={catRef} className="relative hidden shrink-0 sm:block">
-          <button
-            type="button"
-            className="flex h-full min-w-[9.5rem] items-center justify-between gap-1 border-r px-3 text-sm font-medium"
-            onClick={() => setCatOpen((v) => !v)}
-            aria-expanded={catOpen}
-            aria-haspopup="listbox"
-          >
-            <span className="max-w-[7rem] truncate">{selectedLabel}</span>
-            <Icon icon={ArrowDown01Icon} size={14} className={cn("transition-transform", catOpen && "rotate-180")} />
-          </button>
-          {catOpen ? (
-            <ul className="absolute left-0 top-full z-50 mt-1 max-h-72 w-56 overflow-y-auto rounded-2xl border bg-card py-1 shadow-lg" role="listbox">
-              <li>
-                <button
-                  type="button"
-                  className={cn("flex w-full px-3 py-2 text-left text-sm hover:bg-muted", category === "all" && "text-primary")}
-                  onClick={() => { setCategory("all"); setCatOpen(false) }}
-                >
-                  All Categories
-                </button>
-              </li>
-              {categories.map((item) => (
-                <li key={item.slug}>
-                  <button
-                    type="button"
-                    className={cn("flex w-full px-3 py-2 text-left text-sm hover:bg-muted", category === item.slug && "text-primary")}
-                    onClick={() => { setCategory(item.slug); setCatOpen(false) }}
-                  >
-                    {item.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
         <label htmlFor="site-search-full" className="sr-only">Search products</label>
         <input
           id="site-search-full"

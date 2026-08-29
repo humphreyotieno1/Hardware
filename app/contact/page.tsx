@@ -21,7 +21,6 @@ import {
   HelpCircle,
   ShoppingCart,
   Truck,
-  Shield,
   Users
 } from "lucide-react"
 
@@ -46,7 +45,6 @@ const contactCategories = [
   { value: "support", label: "Technical Support", icon: HelpCircle },
   { value: "orders", label: "Order Support", icon: ShoppingCart },
   { value: "shipping", label: "Shipping & Delivery", icon: Truck },
-  { value: "returns", label: "Returns & Exchanges", icon: Shield },
   { value: "business", label: "Business Partnership", icon: Users }
 ]
 

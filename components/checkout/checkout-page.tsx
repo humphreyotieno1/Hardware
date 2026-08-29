@@ -27,7 +27,7 @@ export function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [address, setAddress] = useState<Address | null>(null)
   const [serviceRequest, setServiceRequest] = useState<ServiceRequest | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<string>("")
+  const [paymentMethod, setPaymentMethod] = useState<string>("whatsapp")
   const [isProcessing, setIsProcessing] = useState(false)
 
   if (!cart || !cart.cart_items || cart.cart_items.length === 0) {
@@ -38,7 +38,7 @@ export function CheckoutPage() {
           <h1 className="text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
           <p className="text-muted-foreground text-lg mb-8">You need items in your cart to proceed with checkout.</p>
           <Button asChild size="lg">
-            <Link href="/search">Start Shopping</Link>
+            <Link href="/shop">Start Shopping</Link>
           </Button>
         </div>
       </div>
@@ -46,10 +46,8 @@ export function CheckoutPage() {
   }
 
   const subtotal = total
-  const shipping = subtotal >= 5000 ? 0 : 2
-  const serviceCharge = serviceRequest ? 3 : 0 // Base service charge
-  const tax = (subtotal + serviceCharge) * 0.16
-  const finalTotal = subtotal + shipping + serviceCharge + tax
+  const serviceCharge = serviceRequest ? 3 : 0
+  const finalTotal = subtotal + serviceCharge
 
   const handleNext = () => {
     if (currentStep < 4) {
@@ -64,58 +62,102 @@ export function CheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (!address || !paymentMethod) return
+    if (!address || !paymentMethod || !cart?.cart_items?.length) return
+    if (!address.name?.trim() || !address.phone?.trim()) {
+      alert("Please add your name and phone number.")
+      setCurrentStep(1)
+      return
+    }
 
     setIsProcessing(true)
     try {
-      // Import checkout API
       const { checkoutApi } = await import("@/lib/api/checkout")
       const { paymentsApi } = await import("@/lib/api/payments")
-      
-      // Step 1: Place the order
-      // Map address from form structure (street, city, state, postal_code) to API structure (label, line, city, country)
+      const { openWhatsAppOrder } = await import("@/lib/cart/whatsapp-order")
+
       const apiAddress = {
-        label: "Delivery Address",
-        line: (address as any).street || address.line || "",
+        label: address.name || "Delivery Address",
+        line: address.street || address.line || "",
         city: address.city,
         country: address.country || "Kenya",
+        name: address.name,
+        phone: address.phone,
       }
-      
-      const orderResponse = await checkoutApi.placeOrder({
-        address: apiAddress,
-        service_request: serviceRequest ? {
-          type: (serviceRequest as any).type || "installation",
-          details: (serviceRequest as any).details || {
-            services: (serviceRequest as any).services || [],
-            description: (serviceRequest as any).description || "",
-          }
-        } : undefined,
-        payment_method: paymentMethod,
-      })
 
-      // Step 2: Initiate payment if payment method is Paystack/Card
-      if (paymentMethod === "paystack" || paymentMethod === "mpesa") {
+      const service = serviceRequest
+        ? {
+            type: (serviceRequest as any).type || "installation",
+            details: (serviceRequest as any).details || {
+              services: (serviceRequest as any).services || [],
+              description: (serviceRequest as any).description || "",
+            },
+          }
+        : undefined
+
+      const orderResponse = user
+        ? await checkoutApi.placeOrder({
+            address: apiAddress,
+            service_request: service,
+            payment_method: paymentMethod,
+          })
+        : await checkoutApi.placeGuestOrder({
+            name: address.name,
+            phone: address.phone,
+            address: {
+              line: apiAddress.line,
+              city: apiAddress.city,
+              country: apiAddress.country,
+            },
+            items: cart.cart_items.map((item) => ({
+              product_id: item.product_id,
+              quantity: item.quantity,
+            })),
+            payment_method: paymentMethod,
+          })
+
+      sessionStorage.setItem(
+        "last_order",
+        JSON.stringify({
+          order_id: orderResponse.order_id,
+          total: orderResponse.total,
+          payment_method: paymentMethod,
+          address,
+          items: cart.cart_items.map((item) => ({
+            name: item.product?.name || "Product",
+            quantity: item.quantity,
+            price: item.unit_price,
+            image: item.product?.images_json?.[0],
+          })),
+        })
+      )
+
+      if (paymentMethod === "whatsapp") {
+        openWhatsAppOrder(cart.cart_items, total, {
+          name: address.name,
+          phone: address.phone,
+          location: [apiAddress.line, apiAddress.city].filter(Boolean).join(", "),
+        })
+        await clearCart()
+        router.push(`/checkout/success?order_id=${orderResponse.order_id}`)
+        return
+      }
+
+      if (user && (paymentMethod === "paystack" || paymentMethod === "mpesa")) {
         const paymentResponse = await paymentsApi.initiatePayment({
           order_id: orderResponse.order_id,
           payment_method: paymentMethod,
           amount: orderResponse.total,
         })
 
-        // If Paystack authorization URL is provided, redirect to payment
         if (paymentResponse.paystack?.authorization_url) {
-          // Store order ID in session storage for callback
           sessionStorage.setItem("pending_order_id", orderResponse.order_id)
-          
-          // Redirect to Paystack payment page
           window.location.href = paymentResponse.paystack.authorization_url
-          return // Don't clear cart yet, wait for payment confirmation
+          return
         }
-      } else if (paymentMethod === "bank" || paymentMethod === "payment_on_delivery") {
-        // For bank transfer or payment on delivery, order is already placed
-        // Clear cart and redirect to success page
-        await clearCart()
-        router.push(`/checkout/success?order_id=${orderResponse.order_id}`)
       }
+
+      await clearCart()
+      router.push(`/checkout/success?order_id=${orderResponse.order_id}`)
     } catch (error: any) {
       console.error("Failed to place order:", error)
       alert(error?.message || "Failed to place order. Please try again.")
@@ -127,11 +169,19 @@ export function CheckoutPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Secure Checkout</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Checkout</h1>
         <div className="flex items-center justify-center space-x-2 text-muted-foreground">
           <Lock className="h-4 w-4" />
-          <span>SSL Encrypted & Secure</span>
+          <span>{user ? "Signed in" : "Guest checkout — no account needed"}</span>
         </div>
+        {!user ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/auth/login?redirect=/checkout" className="font-medium text-primary hover:underline">
+              Sign in
+            </Link>
+          </p>
+        ) : null}
       </div>
 
       {/* Progress Steps */}
@@ -157,6 +207,7 @@ export function CheckoutPage() {
                   onPaymentMethodChange={setPaymentMethod}
                   onNext={handleNext}
                   onBack={handleBack}
+                  guest={!user}
                 />
               )}
               {currentStep === 4 && address && (
@@ -221,20 +272,12 @@ export function CheckoutPage() {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? <span className="text-primary">Free</span> : formatPrice(shipping)}</span>
-                </div>
                 {serviceRequest && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Service Charge</span>
                     <span>{formatPrice(serviceCharge)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">VAT (16%)</span>
-                  <span>{formatPrice(tax)}</span>
-                </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
@@ -247,10 +290,6 @@ export function CheckoutPage() {
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                   <Lock className="h-3 w-3 text-primary" />
                   <span>Secure SSL encryption</span>
-                </div>
-                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                  <ShoppingBag className="h-3 w-3 text-primary" />
-                  <span>30-day return policy</span>
                 </div>
               </div>
             </CardContent>

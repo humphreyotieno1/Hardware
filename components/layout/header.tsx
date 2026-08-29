@@ -40,7 +40,6 @@ const UTILITY_LINKS = [
   { href: "/about", label: "About Us" },
   { href: "/contact", label: "Contact Us" },
   { href: "/pages/support", label: "Support" },
-  { href: "/pages/returns", label: "Returns" },
 ] as const
 
 const CENTER_NAV = [
@@ -106,7 +105,11 @@ export function Header() {
   }
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12)
+    const onScroll = () => {
+      const y = window.scrollY
+      // Hysteresis so the shadow toggle cannot flicker at a single threshold
+      setScrolled((prev) => (prev ? y > 8 : y > 24))
+    }
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
@@ -119,7 +122,7 @@ export function Header() {
 
   return (
     <header className={cn("relative sticky top-0 z-50 border-b bg-card/95 backdrop-blur-md transition-shadow duration-300", scrolled && "shadow-md")}>
-      <div className={cn("bg-primary text-primary-foreground", scrolled && "hidden md:block")}>
+      <div className="bg-primary text-primary-foreground">
         <div className="container mx-auto flex min-h-9 items-center justify-between gap-3 px-4 py-1.5 text-[11px] sm:text-xs">
           <p className="min-w-0 truncate">
             Delivery across Siaya and surrounding areas · Bulk orders welcome{" "}
@@ -149,7 +152,7 @@ export function Header() {
 
       <div className="relative">
         <div className="container mx-auto px-4">
-          <div className={cn("flex items-center gap-2", scrolled ? "h-14" : "h-16 sm:h-[4.25rem]")}>
+          <div className="flex h-16 items-center gap-2 sm:h-[4.25rem]">
             <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setMobileOpen(true)}>
               <Icon icon={Menu01Icon} />
             </Button>
@@ -266,7 +269,7 @@ export function Header() {
             </button>
             <CategoryFlyout categories={categories} open={catsOpen} onClose={() => setCatsOpen(false)} />
           </div>
-          <SearchBar variant="full" categories={categories} className="min-w-0 flex-1" />
+          <SearchBar variant="full" className="min-w-0 flex-1" />
           <p className="hidden shrink-0 items-center gap-2 text-sm font-medium xl:flex">
             <Icon icon={TruckDeliveryIcon} className="text-primary" />
             Delivery across Siaya

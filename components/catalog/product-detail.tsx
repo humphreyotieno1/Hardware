@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { productsApi, formatPrice } from "@/lib/api"
 import type { Product } from "@/lib/api/types"
@@ -13,11 +12,10 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useStoreUi } from "@/lib/hooks/use-store-ui"
 import { Icon } from "@/lib/icons"
-import { FavouriteIcon, Loading03Icon, MinusSignIcon, PlusSignIcon, RepeatIcon, ShoppingCart01Icon, TruckDeliveryIcon } from "@hugeicons/core-free-icons"
+import { FavouriteIcon, Loading03Icon, MinusSignIcon, PlusSignIcon, ShoppingCart01Icon, TruckDeliveryIcon } from "@hugeicons/core-free-icons"
 import { ProductGallery } from "@/components/catalog/product-gallery"
 import { RelatedProducts } from "@/components/catalog/related-products"
 import { env } from "@/lib/config/env"
-import { cn } from "@/lib/utils"
 
 interface ProductDetailProps {
   productSlug: string
@@ -58,13 +56,9 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
 
   const handleAddToCart = async () => {
     if (!product) return
-    if (!user) {
-      toast({ title: "Login required", description: "Please log in to add items to your cart.", variant: "destructive" })
-      return
-    }
     try {
       setIsAddingToCart(true)
-      await addToCart(product.ID, quantity)
+      await addToCart(product.ID, quantity, product)
       openCart()
     } catch {
       toast({ title: "Error", description: "Failed to add item to cart. Please try again.", variant: "destructive" })
@@ -140,7 +134,6 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
   }
 
   const images = product.images_json?.length ? product.images_json : ["/placeholder.svg"]
-  const inStock = product.stock_quantity > 0
 
   return (
     <div className="container mx-auto px-4 py-6 pb-28 sm:py-8 lg:pb-8">
@@ -168,12 +161,7 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{product.category.name}</p>
           ) : null}
           <h1 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">{product.name}</h1>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <p className="font-display text-3xl font-semibold">{formatPrice(product.price)}</p>
-            <Badge className={cn("rounded-full", inStock ? "bg-emerald-700" : "bg-muted text-muted-foreground")}>
-              {inStock ? `${product.stock_quantity} in stock` : "Out of stock"}
-            </Badge>
-          </div>
+          <p className="font-display text-3xl font-semibold">{formatPrice(product.price)}</p>
           {product.description ? (
             <p className="leading-relaxed text-muted-foreground">{product.description}</p>
           ) : null}
@@ -189,8 +177,8 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(Math.min(Math.max(product.stock_quantity, 1), quantity + 1))}
-                  disabled={!inStock || quantity >= product.stock_quantity}
+                  onClick={() => setQuantity((q) => Math.min(q + 1, 99))}
+                  disabled={quantity >= 99}
                   aria-label="Increase quantity"
                 >
                   <Icon icon={PlusSignIcon} size={16} />
@@ -198,9 +186,9 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
               </div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button className="h-12" disabled={!inStock || isAddingToCart} onClick={handleAddToCart}>
+              <Button className="h-12" disabled={isAddingToCart} onClick={handleAddToCart}>
                 {isAddingToCart ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} />}
-                {!inStock ? "Out of stock" : isAddingToCart ? "Adding…" : "Add to cart"}
+                {isAddingToCart ? "Adding…" : "Add to cart"}
               </Button>
               <Button variant="outline" className="h-12" disabled={isAddingToWishlist} onClick={handleWishlistToggle}>
                 {isAddingToWishlist ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={FavouriteIcon} className={isInWishlist ? "text-primary" : ""} />}
@@ -212,20 +200,11 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
             </Button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex gap-3 rounded-3xl border bg-card p-4">
-              <Icon icon={TruckDeliveryIcon} className="text-primary" />
-              <div>
-                <p className="text-sm font-semibold">Delivery</p>
-                <p className="text-xs text-muted-foreground">Siaya and surrounding areas</p>
-              </div>
-            </div>
-            <div className="flex gap-3 rounded-3xl border bg-card p-4">
-              <Icon icon={RepeatIcon} className="text-primary" />
-              <div>
-                <p className="text-sm font-semibold">Returns</p>
-                <p className="text-xs text-muted-foreground">See our returns policy</p>
-              </div>
+          <div className="flex gap-3 rounded-3xl border bg-card p-4">
+            <Icon icon={TruckDeliveryIcon} className="text-primary" />
+            <div>
+              <p className="text-sm font-semibold">Delivery</p>
+              <p className="text-xs text-muted-foreground">Siaya and surrounding areas</p>
             </div>
           </div>
 
@@ -246,10 +225,6 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
                       <dd>{product.category.name}</dd>
                     </div>
                   ) : null}
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Availability</dt>
-                    <dd>{inStock ? "In stock" : "Out of stock"}</dd>
-                  </div>
                 </dl>
               </AccordionContent>
             </AccordionItem>
@@ -264,9 +239,9 @@ export function ProductDetail({ productSlug }: ProductDetailProps) {
               <p className="truncate text-sm font-semibold">{product.name}</p>
               <p className="font-display text-lg font-semibold">{formatPrice(product.price)}</p>
             </div>
-            <Button className="min-h-11 shrink-0" disabled={!inStock || isAddingToCart} onClick={handleAddToCart}>
+            <Button className="min-h-11 shrink-0" disabled={isAddingToCart} onClick={handleAddToCart}>
               {isAddingToCart ? <Icon icon={Loading03Icon} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} />}
-              {inStock ? "Add" : "Out of stock"}
+              Add
             </Button>
           </div>
         </div>

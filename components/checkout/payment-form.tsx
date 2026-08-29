@@ -16,9 +16,10 @@ interface PaymentFormProps {
   onPaymentMethodChange: (method: string) => void
   onNext: () => void
   onBack: () => void
+  guest?: boolean
 }
 
-export function PaymentForm({ paymentMethod, onPaymentMethodChange, onNext, onBack }: PaymentFormProps) {
+export function PaymentForm({ paymentMethod, onPaymentMethodChange, onNext, onBack, guest }: PaymentFormProps) {
   // Card payment fields
   const [cardNumber, setCardNumber] = useState("")
   const [expiry, setExpiry] = useState("")
@@ -124,38 +125,65 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onNext, onBa
             className="space-y-4"
           >
             <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="mpesa" id="mpesa" />
-              <Label htmlFor="mpesa" className="flex items-center space-x-3 cursor-pointer flex-1">
-                <Smartphone className="h-5 w-5 text-green-600" />
+              <RadioGroupItem value="whatsapp" id="whatsapp" />
+              <Label htmlFor="whatsapp" className="flex items-center space-x-3 cursor-pointer flex-1">
+                <Smartphone className="h-5 w-5 text-[#25D366]" />
                 <div>
-                  <div className="font-medium">M-Pesa (Paystack)</div>
-                  <div className="text-sm text-muted-foreground">Pay with your mobile money via Paystack</div>
+                  <div className="font-medium">Order on WhatsApp</div>
+                  <div className="text-sm text-muted-foreground">Send the order to the store and confirm delivery</div>
                 </div>
-                <Badge variant="secondary" className="ml-auto">Popular</Badge>
+                <Badge variant="secondary" className="ml-auto">Recommended</Badge>
               </Label>
             </div>
-            
+
             <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="paystack" id="card" />
-              <Label htmlFor="card" className="flex items-center space-x-3 cursor-pointer flex-1">
-                <CreditCard className="h-5 w-5 text-blue-600" />
+              <RadioGroupItem value="payment_on_delivery" id="payment_on_delivery" />
+              <Label htmlFor="payment_on_delivery" className="flex items-center space-x-3 cursor-pointer flex-1">
+                <Building2 className="h-5 w-5 text-primary" />
                 <div>
-                  <div className="font-medium">Credit/Debit Card (Paystack)</div>
-                  <div className="text-sm text-muted-foreground">Visa, Mastercard, American Express</div>
+                  <div className="font-medium">Pay on delivery / collection</div>
+                  <div className="text-sm text-muted-foreground">We will confirm the order and arrange payment</div>
                 </div>
               </Label>
             </div>
-            
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="bank" id="bank" />
-              <Label htmlFor="bank" className="flex items-center space-x-3 cursor-pointer flex-1">
-                <Building2 className="h-5 w-5 text-purple-600" />
-                <div>
-                  <div className="font-medium">Bank Transfer</div>
-                  <div className="text-sm text-muted-foreground">Direct bank transfer</div>
+
+            {!guest ? (
+              <>
+                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="mpesa" id="mpesa" />
+                  <Label htmlFor="mpesa" className="flex items-center space-x-3 cursor-pointer flex-1">
+                    <Smartphone className="h-5 w-5 text-green-600" />
+                    <div>
+                      <div className="font-medium">M-Pesa (Paystack)</div>
+                      <div className="text-sm text-muted-foreground">Pay with your mobile money via Paystack</div>
+                    </div>
+                    <Badge variant="secondary" className="ml-auto">Popular</Badge>
+                  </Label>
                 </div>
-              </Label>
-            </div>
+
+                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="paystack" id="card" />
+                  <Label htmlFor="card" className="flex items-center space-x-3 cursor-pointer flex-1">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <div className="font-medium">Credit/Debit Card (Paystack)</div>
+                      <div className="text-sm text-muted-foreground">Visa, Mastercard, American Express</div>
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="bank" id="bank" />
+                  <Label htmlFor="bank" className="flex items-center space-x-3 cursor-pointer flex-1">
+                    <Building2 className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <div className="font-medium">Bank Transfer</div>
+                      <div className="text-sm text-muted-foreground">Direct bank transfer</div>
+                    </div>
+                  </Label>
+                </div>
+              </>
+            ) : null}
           </RadioGroup>
           
           {errors.paymentMethod && (
@@ -172,6 +200,8 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onNext, onBa
         <Card>
           <CardHeader>
             <CardTitle>
+              {paymentMethod === "whatsapp" && "WhatsApp order"}
+              {paymentMethod === "payment_on_delivery" && "Pay on delivery"}
               {paymentMethod === "card" && "Card Details"}
               {paymentMethod === "mpesa" && "M-Pesa Details"}
               {paymentMethod === "bank" && "Bank Transfer Details"}
@@ -179,6 +209,16 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onNext, onBa
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {paymentMethod === "whatsapp" && (
+                <p className="text-sm text-muted-foreground">
+                  After you confirm, WhatsApp will open with your order list so the store can confirm stock, price and delivery.
+                </p>
+              )}
+              {paymentMethod === "payment_on_delivery" && (
+                <p className="text-sm text-muted-foreground">
+                  We will call or WhatsApp you to confirm the order. You can pay when collecting or on delivery.
+                </p>
+              )}
               {/* Paystack Payment - Card details handled on Paystack secure page */}
               {paymentMethod === "paystack" && (
                 <div className="space-y-4">

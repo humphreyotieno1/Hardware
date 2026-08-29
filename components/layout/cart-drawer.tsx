@@ -7,7 +7,8 @@ import { useCart } from "@/lib/hooks/use-cart"
 import { useStoreUi } from "@/lib/hooks/use-store-ui"
 import { formatPrice } from "@/lib/api"
 import { Icon } from "@/lib/icons"
-import { Delete02Icon, MinusSignIcon, PlusSignIcon, ShoppingCart01Icon } from "@hugeicons/core-free-icons"
+import { Delete02Icon, MinusSignIcon, PlusSignIcon, ShoppingCart01Icon, WhatsappIcon } from "@hugeicons/core-free-icons"
+import { openWhatsAppOrder } from "@/lib/cart/whatsapp-order"
 
 export function CartDrawer() {
   const { cart, itemCount, total, updateItem, removeItem, loading } = useCart()
@@ -101,7 +102,18 @@ export function CartDrawer() {
               <Button asChild className="h-12 w-full" onClick={closeCart}>
                 <Link href="/checkout">Checkout</Link>
               </Button>
-              <Button asChild variant="outline" className="h-12 w-full" onClick={closeCart}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 w-full border-[#25D366] bg-white text-[#128C7E] hover:bg-[#25D366] hover:text-white"
+                onClick={() => {
+                  openWhatsAppOrder(items, total)
+                  closeCart()
+                }}
+              >
+                <Icon icon={WhatsappIcon} size={16} /> Order on WhatsApp
+              </Button>
+              <Button asChild variant="ghost" className="h-11 w-full" onClick={closeCart}>
                 <Link href="/cart">View cart</Link>
               </Button>
             </div>

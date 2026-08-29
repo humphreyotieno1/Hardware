@@ -28,15 +28,16 @@ export function OrderReview({
   const { cart, total } = useCart()
 
   const subtotal = total
-  const shipping = subtotal >= 5000 ? 0 : 2
   const serviceCharge = serviceRequest ? 3 : 0
-  const tax = (subtotal + serviceCharge) * 0.16
-  const finalTotal = subtotal + shipping + serviceCharge + tax
+  const finalTotal = subtotal + serviceCharge
 
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
+      case "whatsapp": return "WhatsApp"
+      case "payment_on_delivery": return "Pay on delivery"
       case "mpesa": return "M-Pesa"
       case "card": return "Credit/Debit Card"
+      case "paystack": return "Card (Paystack)"
       case "bank": return "Bank Transfer"
       default: return method
     }
@@ -71,8 +72,10 @@ export function OrderReview({
             Shipping Address
           </h3>
           <div className="bg-muted p-3 rounded-md">
-            <p>{(address as any).street || address.line}</p>
-            <p>{address.city}{((address as any).state || (address as any).postal_code) ? `, ${(address as any).state || ""} ${(address as any).postal_code || ""}` : ""}</p>
+            {address.name ? <p className="font-medium">{address.name}</p> : null}
+            {address.phone ? <p>{address.phone}</p> : null}
+            <p>{address.street || address.line}</p>
+            <p>{address.city}{address.state ? `, ${address.state}` : ""}</p>
             <p>{address.country}</p>
           </div>
         </div>
@@ -132,20 +135,12 @@ export function OrderReview({
               <span>Subtotal</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Shipping</span>
-              <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
-            </div>
             {serviceCharge > 0 && (
               <div className="flex justify-between">
                 <span>Services</span>
                 <span>{formatPrice(serviceCharge)}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span>Tax (16% VAT)</span>
-              <span>{formatPrice(tax)}</span>
-            </div>
             <div className="flex justify-between border-t pt-2 font-bold text-lg">
               <span>Total</span>
               <span>{formatPrice(finalTotal)}</span>
@@ -171,7 +166,7 @@ export function OrderReview({
             ) : (
               <>
                 <Check className="h-4 w-4 mr-2" />
-                Place Order
+                {paymentMethod === "whatsapp" ? "Send order on WhatsApp" : "Place order"}
               </>
             )}
           </Button>

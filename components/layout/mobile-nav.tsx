@@ -163,9 +163,6 @@ export function MobileNav({ open, onOpenChange, categories }: MobileNavProps) {
           <Link href="/pages/support" onClick={close} className={cn(rowClass, active("/pages/support") ? "text-primary" : "text-foreground")}>
             Support
           </Link>
-          <Link href="/pages/returns" onClick={close} className={cn(rowClass, active("/pages/returns") ? "text-primary" : "text-foreground")}>
-            Returns
-          </Link>
           {user ? (
             <>
               <Link href="/account" onClick={close} className={cn(rowClass, active("/account") ? "text-primary" : "text-foreground")}>

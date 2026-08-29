@@ -57,13 +57,9 @@ export const ProductCard = memo(function ProductCard({
       onAddToCart(product.ID)
       return
     }
-    if (!user) {
-      toast({ title: "Login required", description: "Please log in to add items to your cart.", variant: "destructive" })
-      return
-    }
     try {
       setLoading((prev) => ({ ...prev, cart: true }))
-      await addToCart(product.ID, 1)
+      await addToCart(product.ID, 1, product)
       setAdded(true)
       openCart()
       window.setTimeout(() => setAdded(false), 1600)
@@ -100,7 +96,6 @@ export const ProductCard = memo(function ProductCard({
   }
 
   const productUrl = `/products/${product.slug || product.ID}`
-  const inStock = product.stock_quantity > 0
   const images = product.images_json || []
 
   return (
@@ -145,9 +140,6 @@ export const ProductCard = memo(function ProductCard({
             <Icon icon={FavouriteIcon} size={14} strokeWidth={isInWishlist ? 2 : 1.5} className={isInWishlist ? "text-primary" : ""} />
           )}
         </button>
-        <span className={cn("absolute left-2 top-2 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide", inStock ? "bg-emerald-700 text-white" : "bg-card text-muted-foreground")}>
-          {inStock ? "In stock" : "Out of stock"}
-        </span>
         <div className="absolute inset-x-2 bottom-2 z-10 hidden translate-y-1 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:flex md:gap-1.5">
           <button
             type="button"
@@ -163,7 +155,7 @@ export const ProductCard = memo(function ProductCard({
           <button
             type="button"
             onClick={handleAddToCart}
-            disabled={!inStock || loading.cart}
+            disabled={loading.cart}
             className="flex h-8 flex-1 items-center justify-center gap-1 rounded-full bg-primary text-[11px] font-semibold text-primary-foreground shadow-sm disabled:opacity-50"
           >
             {loading.cart ? <Icon icon={Loading03Icon} size={13} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} size={13} />}
@@ -182,11 +174,11 @@ export const ProductCard = memo(function ProductCard({
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={!inStock || loading.cart}
+          disabled={loading.cart}
           className="mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1.5 rounded-full bg-secondary text-[11px] font-semibold text-secondary-foreground transition hover:bg-secondary/90 disabled:opacity-50 md:hidden"
         >
           {loading.cart ? <Icon icon={Loading03Icon} size={14} className="animate-spin" /> : <Icon icon={ShoppingCart01Icon} size={14} />}
-          {inStock ? (added ? "Added" : "Add to cart") : "Out of stock"}
+          {added ? "Added" : "Add to cart"}
         </button>
       </div>
     </article>
